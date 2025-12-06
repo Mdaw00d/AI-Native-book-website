@@ -1,0 +1,26 @@
+.contactSection {
+  padding: 2rem 0;
+}
+
+.contactForm {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: var(--ifm-border-radius);
+  background-color: var(--ifm-background-color);
+}
+
+.inputField {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: var(--ifm-border-radius);
+  box-sizing: border-box; /* Ensure padding doesn't increase width */
+}
+
+.successMessage {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+}

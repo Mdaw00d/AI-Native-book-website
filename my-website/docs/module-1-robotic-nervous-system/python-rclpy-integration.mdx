@@ -1,0 +1,383 @@
+---
+sidebar_position: 3
+title: Python rclpy Integration
+---
+
+# Python rclpy Integration
+
+This chapter focuses on `rclpy`, the Python client library for ROS 2. We'll learn how to create nodes, publish and subscribe to topics, create service clients and servers, and implement practical robotics applications using Python.
+
+## Introduction to rclpy
+
+`rclpy` is the Python client library that provides the API for interacting with ROS 2. It allows you to:
+
+*   Create and manage ROS 2 nodes
+*   Publish and subscribe to topics
+*   Create service clients and servers
+*   Use timers for periodic operations
+*   Handle parameters and logging
+
+Python is a popular choice for robotics development due to its readability, extensive library ecosystem, and rapid prototyping capabilities.
+
+## Setting Up Your ROS 2 Python Environment
+
+Before writing ROS 2 Python code, ensure you have ROS 2 installed and your environment sourced:
+
+```bash
+# Source ROS 2 (adjust for your ROS 2 distribution)
+source /opt/ros/humble/setup.bash
+
+# Create a workspace (if you don't have one)
+mkdir -p ~/ros2_ws/src
+cd ~/ros2_ws/src
+
+# Create a Python package
+ros2 pkg create --build-type ament_python my_robot_package --dependencies rclpy std_msgs
+```
+
+## Creating Your First ROS 2 Node
+
+Let's create a simple "Hello World" node that demonstrates the basic structure of a ROS 2 Python node.
+
+```python title="my_robot_package/my_robot_package/hello_node.py"
+import rclpy
+from rclpy.node import Node
+
+class HelloNode(Node):
+    def __init__(self):
+        super().__init__('hello_node')
+        self.get_logger().info('Hello, ROS 2!')
+
+        # Create a timer that fires every second
+        self.timer = self.create_timer(1.0, self.timer_callback)
+        self.counter = 0
+
+    def timer_callback(self):
+        self.counter += 1
+        self.get_logger().info(f'Timer callback executed {self.counter} times')
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = HelloNode()
+
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
+```
+
+### Key Components:
+
+*   **`rclpy.init()`**: Initializes the ROS 2 context
+*   **`Node` class**: Base class for all ROS 2 nodes
+*   **`super().__init__('node_name')`**: Calls the parent constructor with a unique node name
+*   **`self.get_logger()`**: Provides logging functionality
+*   **`rclpy.spin()`**: Keeps the node alive and processes callbacks
+*   **`node.destroy_node()`**: Cleans up node resources
+*   **`rclpy.shutdown()`**: Shuts down the ROS 2 context
+
+## Publishing to Topics
+
+Publishers send data to topics. Here's an example of a node that publishes string messages:
+
+```python title="my_robot_package/my_robot_package/publisher_node.py"
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
+
+class PublisherNode(Node):
+    def __init__(self):
+        super().__init__('publisher_node')
+
+        # Create a publisher on the 'chatter' topic with message type String
+        self.publisher = self.create_publisher(String, 'chatter', 10)
+
+        # Create a timer to publish every 0.5 seconds
+        self.timer = self.create_timer(0.5, self.publish_message)
+        self.counter = 0
+
+    def publish_message(self):
+        msg = String()
+        msg.data = f'Hello ROS 2! Count: {self.counter}'
+        self.publisher.publish(msg)
+        self.get_logger().info(f'Published: "{msg.data}"')
+        self.counter += 1
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = PublisherNode()
+
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
+```
+
+### Publisher Parameters:
+
+*   **Message type**: `String` (from `std_msgs.msg`)
+*   **Topic name**: `'chatter'`
+*   **Queue size**: `10` (how many messages to buffer)
+
+## Subscribing to Topics
+
+Subscribers receive data from topics. Here's an example that subscribes to the same 'chatter' topic:
+
+```python title="my_robot_package/my_robot_package/subscriber_node.py"
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
+
+class SubscriberNode(Node):
+    def __init__(self):
+        super().__init__('subscriber_node')
+
+        # Create a subscriber on the 'chatter' topic
+        self.subscription = self.create_subscription(
+            String,
+            'chatter',
+            self.listener_callback,
+            10
+        )
+
+    def listener_callback(self, msg):
+        self.get_logger().info(f'Received: "{msg.data}"')
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = SubscriberNode()
+
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
+```
+
+### Subscriber Parameters:
+
+*   **Message type**: `String`
+*   **Topic name**: `'chatter'`
+*   **Callback function**: `self.listener_callback` (called when a message arrives)
+*   **Queue size**: `10`
+
+## Creating a Service Server
+
+Services provide request/response functionality. Here's a simple add_two_ints service:
+
+```python title="my_robot_package/my_robot_package/service_server.py"
+import rclpy
+from rclpy.node import Node
+from example_interfaces.srv import AddTwoInts
+
+class AddTwoIntsServer(Node):
+    def __init__(self):
+        super().__init__('add_two_ints_server')
+
+        # Create a service server
+        self.srv = self.create_service(
+            AddTwoInts,
+            'add_two_ints',
+            self.add_two_ints_callback
+        )
+        self.get_logger().info('Add Two Ints Service Server ready')
+
+    def add_two_ints_callback(self, request, response):
+        response.sum = request.a + request.b
+        self.get_logger().info(f'Request: {request.a} + {request.b} = {response.sum}')
+        return response
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = AddTwoIntsServer()
+
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
+```
+
+## Creating a Service Client
+
+Here's how to call the add_two_ints service:
+
+```python title="my_robot_package/my_robot_package/service_client.py"
+import rclpy
+from rclpy.node import Node
+from example_interfaces.srv import AddTwoInts
+import sys
+
+class AddTwoIntsClient(Node):
+    def __init__(self):
+        super().__init__('add_two_ints_client')
+
+        # Create a service client
+        self.client = self.create_client(AddTwoInts, 'add_two_ints')
+
+        # Wait for the service to be available
+        while not self.client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('Service not available, waiting...')
+
+    def send_request(self, a, b):
+        request = AddTwoInts.Request()
+        request.a = a
+        request.b = b
+
+        # Call the service asynchronously
+        future = self.client.call_async(request)
+        return future
+
+def main(args=None):
+    rclpy.init(args=args)
+
+    if len(sys.argv) != 3:
+        print('Usage: ros2 run my_robot_package service_client <a> <b>')
+        return
+
+    node = AddTwoIntsClient()
+    future = node.send_request(int(sys.argv[1]), int(sys.argv[2]))
+
+    # Spin until the future is complete
+    rclpy.spin_until_future_complete(node, future)
+
+    if future.result() is not None:
+        response = future.result()
+        node.get_logger().info(f'Result: {sys.argv[1]} + {sys.argv[2]} = {response.sum}')
+    else:
+        node.get_logger().error('Service call failed')
+
+    node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
+```
+
+## Quality of Service (QoS) in rclpy
+
+You can configure QoS profiles for publishers and subscribers:
+
+```python
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
+
+# Create a custom QoS profile
+qos_profile = QoSProfile(
+    reliability=ReliabilityPolicy.BEST_EFFORT,
+    history=HistoryPolicy.KEEP_LAST,
+    depth=10
+)
+
+# Use it with a publisher
+self.publisher = self.create_publisher(String, 'my_topic', qos_profile)
+
+# Use it with a subscriber
+self.subscription = self.create_subscription(
+    String,
+    'my_topic',
+    self.callback,
+    qos_profile
+)
+```
+
+## Practical Example: Robot Velocity Controller
+
+Here's a more realistic example that subscribes to sensor data and publishes velocity commands:
+
+```python title="my_robot_package/my_robot_package/velocity_controller.py"
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+from sensor_msgs.msg import LaserScan
+
+class VelocityController(Node):
+    def __init__(self):
+        super().__init__('velocity_controller')
+
+        # Subscribe to laser scan
+        self.scan_subscription = self.create_subscription(
+            LaserScan,
+            '/scan',
+            self.scan_callback,
+            10
+        )
+
+        # Publish velocity commands
+        self.cmd_vel_publisher = self.create_publisher(
+            Twist,
+            '/cmd_vel',
+            10
+        )
+
+        self.get_logger().info('Velocity Controller started')
+
+    def scan_callback(self, msg):
+        # Simple obstacle avoidance logic
+        min_distance = min(msg.ranges)
+
+        twist = Twist()
+
+        if min_distance < 0.5:  # Obstacle detected within 0.5 meters
+            twist.linear.x = 0.0
+            twist.angular.z = 0.5  # Turn to avoid
+            self.get_logger().warn(f'Obstacle detected at {min_distance:.2f}m, turning')
+        else:
+            twist.linear.x = 0.2  # Move forward
+            twist.angular.z = 0.0
+            self.get_logger().info('Path clear, moving forward')
+
+        self.cmd_vel_publisher.publish(twist)
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = VelocityController()
+
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
+```
+
+## Best Practices for rclpy Development
+
+1. **Node Lifecycle**: Always properly initialize and shut down nodes
+2. **Error Handling**: Use try-except blocks to handle exceptions gracefully
+3. **Logging**: Use `self.get_logger()` instead of `print()` for debugging
+4. **Type Hints**: Use Python type hints for better code clarity
+5. **Package Organization**: Keep your code modular and well-organized
+6. **Parameters**: Use ROS parameters for configurable values instead of hardcoding
+7. **Testing**: Write unit tests for your nodes using `pytest` and `launch_testing`
+
+## Conclusion
+
+`rclpy` provides a powerful and Pythonic way to develop ROS 2 applications. By mastering nodes, publishers, subscribers, and services in Python, you can quickly prototype and deploy complex robotics systems. The examples in this chapter form the foundation for more advanced ROS 2 development.
+
+In the next chapter, we'll explore URDF (Unified Robot Description Format) and learn how to model humanoid robots for simulation and control.

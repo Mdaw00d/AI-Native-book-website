@@ -1,0 +1,89 @@
+---
+title: ROS 2 Middleware
+---
+
+# ROS 2 Middleware
+
+ROS 2 (Robot Operating System 2) is built on a "middleware" layer that handles communication between different processes (nodes) in a distributed system. This middleware is responsible for discovery, serialization, transportation, and delivery of messages. Unlike ROS 1's custom TCP/UDP-based communication, ROS 2 leverages an industry standard called DDS (Data Distribution Service).
+
+## Data Distribution Service (DDS)
+
+DDS is an open international standard for real-time data exchange, designed for mission-critical applications. It provides a publish/subscribe model with quality-of-service (QoS) policies that allow developers to fine-tune communication behavior.
+
+Key characteristics of DDS:
+
+*   **Decentralized:** No central broker is required, making systems more robust and scalable.
+*   **Discovery:** DDS participants automatically discover each other and available data streams.
+*   **QoS Policies:** A rich set of QoS policies allows users to specify reliability, durability, liveliness, deadline, history, and many other communication parameters. This is crucial for real-time robotics applications where guaranteed message delivery and timing are essential.
+*   **Serialization:** DDS handles the serialization and deserialization of data, allowing different programming languages and platforms to communicate seamlessly.
+*   **Transport Agnostic:** DDS can operate over various transport layers (e.g., UDP, TCP, shared memory).
+
+## ROS 2 and DDS Implementations
+
+ROS 2 does not specify a single DDS implementation. Instead, it uses a RMW (ROS Middleware Wrapper) layer that abstracts away the specific DDS vendor. This allows users to swap out different DDS implementations without changing their ROS 2 application code.
+
+Common DDS implementations supported by ROS 2:
+
+*   **Fast DDS (default):** Provided by eProsima, it's the most commonly used RMW implementation in ROS 2.
+*   **Cyclone DDS:** Developed by ADLINK, known for its performance and small footprint.
+*   **Connext DDS:** A commercial offering from RTI, often used in high-assurance systems.
+
+## Quality of Service (QoS) Policies in ROS 2
+
+QoS policies are fundamental to ROS 2 communication, allowing developers to specify the desired behavior for publishers and subscribers. Here are some of the most important QoS settings:
+
+*   **History:**
+    *   `KEEP_LAST`: Only the N most recent samples are kept.
+    *   `KEEP_ALL`: All samples are kept (up to resource limits).
+*   **Reliability:**
+    *   `BEST_EFFORT`: Messages may be lost (e.g., UDP). Faster but less reliable.
+    *   `RELIABLE`: Messages are guaranteed to arrive (e.g., TCP). Slower but reliable.
+*   **Durability:**
+    *   `VOLATILE`: Data is not persistent. New subscribers only receive new data.
+    *   `TRANSIENT_LOCAL`: The publisher will retain some samples for late-joining subscribers.
+*   **Liveliness:**
+    *   Defines how a node asserts its "aliveness" and how other nodes detect its failure.
+*   **Deadline:**
+    *   Specifies a maximum expected time between samples. Useful for detecting when a publisher has stopped sending data within an expected timeframe.
+
+Understanding and configuring these QoS policies is critical for building robust and performable ROS 2 applications, especially in environments with network constraints or strict timing requirements.
+
+## Example: Setting QoS for a Publisher
+
+In `rclpy` (ROS 2 Python client library), you can specify QoS when creating a publisher:
+
+```python
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
+
+class MyPublisher(Node):
+    def __init__(self):
+        super().__init__('my_publisher')
+        qos_profile = QoSProfile(
+            reliability=ReliabilityPolicy.RELIABLE,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=10, # If KEEP_LAST, keep 10 samples
+            durability=DurabilityPolicy.TRANSIENT_LOCAL
+        )
+        self.publisher_ = self.create_publisher(String, 'topic', qos_profile)
+        self.timer = self.create_timer(1.0, self.timer_callback)
+        self.get_logger().info('Publisher started')
+
+    def timer_callback(self):
+        msg = String()
+        msg.data = 'Hello ROS 2!'
+        self.publisher_.publish(msg)
+        self.get_logger().info(f'Publishing: "{msg.data}"')
+
+def main(args=None):
+    rclpy.init(args=args)
+    my_publisher = MyPublisher()
+    rclpy.spin(my_publisher)
+    my_publisher.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
+```

@@ -1,0 +1,234 @@
+---
+title: ROS 2 Nodes, Topics, and Services
+---
+
+# ROS 2 Nodes, Topics, and Services
+
+In ROS 2, the core of any robotic application is built around a distributed graph of executable processes called "nodes." These nodes communicate with each other primarily through "topics" and "services," forming a powerful and flexible architecture for robotics development.
+
+## Nodes
+
+A **node** is essentially an executable process that performs a specific task. In a typical robot system, you might have nodes for:
+
+*   Reading sensor data (e.g., a camera node, a LiDAR node).
+*   Controlling actuators (e.g., a motor control node).
+*   Performing computations (e.g., a path planning node, an image processing node).
+*   Providing a user interface.
+
+Nodes are designed to be modular and reusable. A single ROS 2 system can comprise many nodes running concurrently, possibly on different machines, all communicating over the ROS 2 middleware.
+
+### Example: Creating a Simple Node (rclpy)
+
+```python
+import rclpy
+from rclpy.node import Node
+
+class MinimalPublisher(Node):
+
+    def __init__(self):
+        super().__init__('minimal_publisher')
+        self.i = 0
+
+    def timer_callback(self):
+        self.get_logger().info('Hello World: %d' % self.i)
+        self.i += 1
+
+def main(args=None):
+    rclpy.init(args=args)
+
+    minimal_publisher = MinimalPublisher()
+
+    rclpy.spin(minimal_publisher)
+
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    minimal_publisher.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
+```
+
+## Topics
+
+**Topics** are the most common way for nodes to exchange asynchronous, many-to-many streaming data. They implement a publish/subscribe communication model:
+
+*   **Publishers:** Nodes that send messages to a topic.
+*   **Subscribers:** Nodes that receive messages from a topic.
+
+When a publisher sends a message to a topic, any node subscribed to that topic will receive a copy of the message. Topics are typified, meaning all messages published on a given topic must be of the same message type (e.g., `std_msgs/msg/String`, `sensor_msgs/msg/Image`).
+
+### Characteristics of Topics:
+
+*   **Asynchronous:** Publishers don't wait for subscribers.
+*   **One-way:** Data flows from publisher to subscriber.
+*   **Many-to-many:** Multiple publishers can send to the same topic, and multiple subscribers can receive from the same topic.
+*   **Decoupled:** Publishers and subscribers don't need to know about each other's existence directly; they only interact via the topic.
+
+### Example: Publisher and Subscriber (rclpy)
+
+*(See the `ROS2-Middleware.mdx` example for a publisher. Here's a subscriber:)*
+
+```python
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
+
+class MinimalSubscriber(Node):
+
+    def __init__(self):
+        super().__init__('minimal_subscriber')
+        self.subscription = self.create_subscription(
+            String,
+            'topic',
+            self.listener_callback,
+            10)
+        self.subscription  # prevent unused variable warning
+
+    def listener_callback(self, msg):
+        self.get_logger().info(f'I heard: "{msg.data}"')
+
+def main(args=None):
+    rclpy.init(args=args)
+
+    minimal_subscriber = MinimalSubscriber()
+
+    rclpy.spin(minimal_subscriber)
+
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    minimal_subscriber.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
+```
+
+## Services
+
+**Services** provide a synchronous request/response communication model, similar to a client-server interaction. They are used when a node needs to request a specific action or piece of information from another node and wait for the result.
+
+*   **Service Server:** A node that offers a service and processes requests.
+*   **Service Client:** A node that sends requests to a service server and waits for a response.
+
+Unlike topics, which are streaming, services are single transactions. A client sends a request, the server computes a response, and sends it back. If no response is received, the client typically times out.
+
+### Characteristics of Services:
+
+*   **Synchronous:** The client blocks until a response is received or a timeout occurs.
+*   **Request/Response:** A two-way communication pattern.
+*   **One-to-one:** A client makes a request to a single server.
+*   **Typified:** Both the request and response messages have predefined types.
+
+### Example: Service Server and Client (rclpy)
+
+*(Service definition: `my_interfaces/srv/AddTwoInts.srv`)*
+
+```
+int64 a
+int64 b
+---
+int64 sum
+```
+
+**Service Server:**
+
+```python
+import rclpy
+from rclpy.node import Node
+from my_interfaces.srv import AddTwoInts
+
+class MinimalService(Node):
+
+    def __init__(self):
+        super().__init__('minimal_service')
+        self.srv = self.create_service(AddTwoInts, 'add_two_ints', self.add_two_ints_callback)
+
+    def add_two_ints_callback(self, request, response):
+        response.sum = request.a + request.b
+        self.get_logger().info(f'Incoming request: a={request.a} b={request.b}')
+        self.get_logger().info(f'Sending response: {response.sum}')
+        return response
+
+def main(args=None):
+    rclpy.init(args=args)
+
+    minimal_service = MinimalService()
+
+    rclpy.spin(minimal_service)
+
+    minimal_service.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
+```
+
+**Service Client:**
+
+```python
+import sys
+import rclpy
+from rclpy.node import Node
+from my_interfaces.srv import AddTwoInts
+
+class MinimalClientAsync(Node):
+
+    def __init__(self):
+        super().__init__('minimal_client_async')
+        self.cli = self.create_client(AddTwoInts, 'add_two_ints')
+        while not self.cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('service not available, waiting again...')
+        self.req = AddTwoInts.Request()
+
+    def send_request(self, a, b):
+        self.req.a = a
+        self.req.b = b
+        self.future = self.cli.call_async(self.req)
+        rclpy.spin_until_future_complete(self, self.future)
+        return self.future.result()
+
+def main(args=None):
+    rclpy.init(args=args)
+
+    minimal_client = MinimalClientAsync()
+    response = minimal_client.send_request(int(sys.argv[1]), int(sys.argv[2]))
+    minimal_client.get_logger().info(
+        f'Result of add_two_ints: for {minimal_client.req.a} + {minimal_client.req.b} = {response.sum}')
+
+    minimal_client.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
+```
+
+## Actions
+
+**Actions** are a higher-level communication type in ROS 2 that combine aspects of topics and services. They are designed for long-running, goal-oriented tasks that provide continuous feedback.
+
+*   **Action Server:** Executes the goal and provides feedback and a final result.
+*   **Action Client:** Sends a goal, can cancel the goal, and receives continuous feedback and a final result.
+
+Actions are typically used for tasks like navigating a robot to a specific point, manipulating an object, or executing complex sequences of movements where intermediate feedback is important.
+
+### Characteristics of Actions:
+
+*   **Goal:** The desired state or task to achieve.
+*   **Feedback:** Continuous updates on the progress towards the goal.
+*   **Result:** The final outcome once the goal is completed or aborted.
+*   **Preemptable:** Clients can cancel an ongoing goal.
+
+Actions are built using three message types: a goal, a feedback, and a result. ROS 2 automatically generates these message types from a single `.action` definition file.
+
+### When to Use Each Communication Type:
+
+*   **Topics:** For continuous, one-way streaming data (e.g., sensor readings, joint states).
+*   **Services:** For immediate, synchronous request/response operations (e.g., getting a parameter, triggering a single action).
+*   **Actions:** For long-running, goal-oriented tasks that require feedback and can be preempted (e.g., robot navigation, complex manipulation).
