@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ai-native-book.dev/schemas/vla/object-detection/v1.0.0",
+  "title": "ObjectDetectionResult",
+  "description": "Output from object detection system with 2D and 3D localization",
+  "type": "object",
+  "required": ["detections", "processing_time"],
+  "properties": {
+    "detections": {
+      "type": "array",
+      "description": "List of detected objects",
+      "items": {
+        "$ref": "#/definitions/Detection"
+      }
+    },
+    "processing_time": {
+      "type": "number",
+      "description": "Detection processing time in seconds",
+      "minimum": 0
+    }
+  },
+  "definitions": {
+    "Detection": {
+      "type": "object",
+      "required": ["class_name", "confidence", "bbox_2d"],
+      "properties": {
+        "class_name": {
+          "type": "string",
+          "description": "Object class label (from COCO dataset)",
+          "examples": ["cup", "bottle", "person", "chair"]
+        },
+        "confidence": {
+          "type": "number",
+          "description": "Detection confidence score",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "bbox_2d": {
+          "$ref": "#/definitions/BoundingBox2D"
+        },
+        "pose_3d": {
+          "$ref": "#/definitions/Pose3D",
+          "description": "3D pose (optional, requires depth information)"
+        }
+      }
+    },
+    "BoundingBox2D": {
+      "type": "object",
+      "required": ["x_min", "y_min", "x_max", "y_max"],
+      "properties": {
+        "x_min": {
+          "type": "integer",
+          "description": "Left edge in pixels",
+          "minimum": 0
+        },
+        "y_min": {
+          "type": "integer",
+          "description": "Top edge in pixels",
+          "minimum": 0
+        },
+        "x_max": {
+          "type": "integer",
+          "description": "Right edge in pixels",
+          "minimum": 0
+        },
+        "y_max": {
+          "type": "integer",
+          "description": "Bottom edge in pixels",
+          "minimum": 0
+        }
+      }
+    },
+    "Pose3D": {
+      "type": "object",
+      "required": ["position", "orientation"],
+      "properties": {
+        "position": {
+          "type": "array",
+          "description": "[x, y, z] position in meters (robot frame)",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "number"
+          }
+        },
+        "orientation": {
+          "type": "array",
+          "description": "[x, y, z, w] quaternion (normalized)",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "number",
+            "minimum": -1.0,
+            "maximum": 1.0
+          }
+        }
+      }
+    }
+  }
+}

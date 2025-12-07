@@ -1,0 +1,581 @@
+---
+id: chapter-1-isaac-sim-setup
+title: "Chapter 1: Isaac Sim Setup"
+sidebar_label: "Ch1: Isaac Sim Setup"
+sidebar_position: 2
+description: Install and configure NVIDIA Isaac Sim for photorealistic robotics simulation with RTX GPU acceleration
+keywords: [nvidia isaac sim, isaac sim installation, cuda setup, cudnn, rtx gpu, omniverse, photorealistic simulation]
+---
+
+import Callout from '@site/src/components/Callout';
+import CodeBlock from '@site/src/components/CodeBlock';
+
+# Chapter 1: Isaac Sim Setup
+
+Learn to install and configure **NVIDIA Isaac Sim**, a photorealistic robotics simulator built on Omniverse, for synthetic data generation and robot training.
+
+## Learning Objectives
+
+By the end of this chapter, you will:
+
+- ✅ Understand Isaac Sim hardware requirements and GPU tiers
+- ✅ Install CUDA 11.8+ and cuDNN 8.6+ correctly
+- ✅ Install Isaac Sim using standalone or Omniverse launcher methods
+- ✅ Verify installation by running a sample scene at >30 FPS
+- ✅ Configure the Python API for programmatic scene creation
+- ✅ Benchmark your GPU performance
+
+**Time Estimate**: 2-3 hours (including downloads)
+
+---
+
+## Hardware Requirements
+
+<Callout type="warning" title="GPU Requirement">
+Isaac Sim **requires an NVIDIA RTX GPU** with ray tracing support. AMD and Intel GPUs are not supported.
+</Callout>
+
+### GPU Performance Tiers
+
+| GPU Tier | Model Examples | Isaac Sim FPS | Use Case |
+|----------|---------------|---------------|----------|
+| **Minimum** | RTX 3060 (12GB VRAM) | 30-40 FPS @ 1080p | Learning, small scenes |
+| **Recommended** | RTX 4070, RTX 3080 (16GB) | 60-80 FPS @ 1080p | Production workflows |
+| **High-End** | RTX 4090, RTX A6000 (48GB) | 100+ FPS @ 4K | Large simulations, batch generation |
+| **Data Center** | A100, H100 | Varies (headless) | Cloud deployment, HPC clusters |
+
+<Callout type="info" title="VRAM Matters">
+More VRAM allows:
+- Larger scenes with more objects
+- Higher-resolution textures
+- Multiple simultaneous simulations
+- Reduced out-of-memory crashes
+</Callout>
+
+### System Requirements
+
+**Minimum Configuration**:
+- **GPU**: NVIDIA RTX 3060 (12GB VRAM)
+- **CPU**: Intel i7 / AMD Ryzen 7 (6+ cores)
+- **RAM**: 16GB system memory
+- **Storage**: 100GB SSD (faster load times)
+- **OS**: Ubuntu 20.04, 22.04, or Windows 10/11
+
+**Recommended Configuration**:
+- **GPU**: NVIDIA RTX 4070 or higher
+- **CPU**: Intel i9 / AMD Ryzen 9 (8+ cores)
+- **RAM**: 32GB system memory
+- **Storage**: 500GB NVMe SSD
+
+### Operating System Compatibility
+
+| OS | Isaac Sim | Isaac ROS | Notes |
+|----|-----------|-----------|-------|
+| **Ubuntu 20.04** | ✅ Yes | ✅ Yes | Best compatibility |
+| **Ubuntu 22.04** | ✅ Yes | ✅ Yes | ROS 2 Humble native |
+| **Windows 10/11** | ✅ Yes | ❌ No | Isaac ROS requires Linux |
+| **macOS** | ❌ No | ❌ No | No NVIDIA GPU support |
+
+<Callout type="warning" title="Windows Users">
+If using Windows:
+- Isaac Sim works natively on Windows 10/11
+- For Isaac ROS (Chapters 3-5), you'll need:
+  - **WSL2** (Windows Subsystem for Linux) with Ubuntu 22.04
+  - **Dual-boot** Ubuntu partition
+  - **Cloud Linux instance** (AWS, Google Cloud)
+</Callout>
+
+---
+
+## Step 1: Install CUDA Toolkit 11.8+
+
+Isaac Sim requires **CUDA 11.8 or later** for GPU acceleration.
+
+### Ubuntu 20.04/22.04 Installation
+
+<CodeBlock language="bash" title="Install CUDA 11.8">
+{`# Download CUDA 11.8 installer
+wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run
+
+# Make installer executable
+chmod +x cuda_11.8.0_520.61.05_linux.run
+
+# Run installer (requires sudo)
+sudo ./cuda_11.8.0_520.61.05_linux.run --silent --toolkit
+
+# Add CUDA to PATH (add to ~/.bashrc for persistence)
+export PATH=/usr/local/cuda-11.8/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
+
+# Verify installation
+nvcc --version
+# Expected output: release 11.8, V11.8.89`}
+</CodeBlock>
+
+<Callout type="info" title="CUDA Version Notes">
+- **CUDA 11.8** is the minimum. CUDA 12.x also works.
+- Isaac Sim 2023.1.1+ supports CUDA 12.1
+- Check compatibility: [NVIDIA CUDA Docs](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/)
+</Callout>
+
+### Windows Installation
+
+1. Download **CUDA 11.8** from [NVIDIA CUDA Downloads](https://developer.nvidia.com/cuda-downloads)
+2. Run the `.exe` installer (select "Custom" and choose Toolkit only)
+3. Verify in Command Prompt:
+
+<CodeBlock language="cmd" title="Verify CUDA (Windows)">
+{`nvcc --version
+# Expected: release 11.8, V11.8.89`}
+</CodeBlock>
+
+### Verify GPU Detection
+
+<CodeBlock language="bash" title="Check GPU with nvidia-smi">
+{`nvidia-smi
+
+# Expected output (example):
+# +-----------------------------------------------------------------------------+
+# | NVIDIA-SMI 520.61.05    Driver Version: 520.61.05    CUDA Version: 11.8   |
+# |-------------------------------+----------------------+----------------------+
+# | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+# | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+# |===============================+======================+======================|
+# |   0  NVIDIA GeForce ...  Off  | 00000000:01:00.0  On |                  N/A |
+# | 30%   45C    P8    25W / 220W |   1024MiB / 12288MiB |      0%      Default |
+# +-------------------------------+----------------------+----------------------+`}
+</CodeBlock>
+
+<Callout type="success" title="What to Check">
+- **Driver Version**: Should be 520.x or higher
+- **CUDA Version**: 11.8 or later
+- **Memory**: Total VRAM shown (12GB for RTX 3060)
+- **GPU Util**: Should show 0% when idle
+</Callout>
+
+---
+
+## Step 2: Install cuDNN 8.6+
+
+**cuDNN** (CUDA Deep Neural Network library) accelerates deep learning operations in Isaac Sim.
+
+### Download cuDNN
+
+1. Visit [NVIDIA cuDNN Downloads](https://developer.nvidia.com/cudnn) (requires free NVIDIA account)
+2. Download **cuDNN 8.6 or later for CUDA 11.x**:
+   - File: `cudnn-linux-x86_64-8.6.0.163_cuda11-archive.tar.xz` (Ubuntu)
+   - File: `cudnn-windows-x86_64-8.6.0.163_cuda11-archive.zip` (Windows)
+
+### Ubuntu Installation
+
+<CodeBlock language="bash" title="Install cuDNN 8.6">
+{`# Extract cuDNN archive
+tar -xvf cudnn-linux-x86_64-8.6.0.163_cuda11-archive.tar.xz
+
+# Copy files to CUDA directory
+sudo cp cudnn-linux-x86_64-8.6.0.163_cuda11-archive/include/cudnn*.h /usr/local/cuda-11.8/include
+sudo cp -P cudnn-linux-x86_64-8.6.0.163_cuda11-archive/lib/libcudnn* /usr/local/cuda-11.8/lib64
+sudo chmod a+r /usr/local/cuda-11.8/include/cudnn*.h /usr/local/cuda-11.8/lib64/libcudnn*
+
+# Verify installation
+cat /usr/local/cuda-11.8/include/cudnn_version.h | grep CUDNN_MAJOR -A 2
+# Expected: CUDNN_MAJOR 8, CUDNN_MINOR 6`}
+</CodeBlock>
+
+### Windows Installation
+
+1. Extract the `.zip` file
+2. Copy files to CUDA installation directory:
+   - `cudnn/bin/cudnn*.dll` → `C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8\\bin`
+   - `cudnn/include/cudnn*.h` → `C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8\\include`
+   - `cudnn/lib/x64/cudnn*.lib` → `C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8\\lib\\x64`
+
+---
+
+## Step 3: Install NVIDIA Isaac Sim
+
+Two installation methods are available:
+
+### Method 1: Standalone Installation (Recommended)
+
+**Pros**: Faster setup, smaller download, no Omniverse dependencies
+**Cons**: Misses some Omniverse features (Nucleus server, collaboration tools)
+
+<CodeBlock language="bash" title="Download Isaac Sim Standalone">
+{`# Download Isaac Sim 2023.1.1 standalone (Ubuntu)
+wget https://developer.nvidia.com/isaac-sim/downloads/2023.1.1/IsaacSim-linux-x86_64-2023.1.1.tar.gz
+
+# Extract to /opt/ (or your preferred location)
+sudo tar -xzf IsaacSim-linux-x86_64-2023.1.1.tar.gz -C /opt/
+sudo mv /opt/isaac-sim-2023.1.1 /opt/isaac-sim
+
+# Set environment variables (add to ~/.bashrc)
+export ISAACSIM_PATH=/opt/isaac-sim
+export ISAACSIM_PYTHON=\${ISAACSIM_PATH}/python.sh
+
+# Launch Isaac Sim
+\${ISAACSIM_PATH}/isaac-sim.sh`}
+</CodeBlock>
+
+<Callout type="info" title="First Launch">
+First launch may take 2-5 minutes:
+- Shader compilation
+- PhysX initialization
+- Asset cache creation
+</Callout>
+
+### Method 2: Omniverse Launcher
+
+**Pros**: Easier updates, access to Nucleus server, collaboration features
+**Cons**: Larger download (~15GB total)
+
+**Steps**:
+
+1. Download [Omniverse Launcher](https://www.nvidia.com/en-us/omniverse/download/)
+2. Install and create NVIDIA account
+3. In Launcher, go to **Exchange** tab
+4. Find **Isaac Sim** and click **Install**
+5. Launch from **Library** tab
+
+<Callout type="warning" title="Version Compatibility">
+For this tutorial, use **Isaac Sim 2023.1.1 or later**:
+- Supports CUDA 12.x
+- Improved ROS 2 bridge
+- Better domain randomization APIs
+</Callout>
+
+---
+
+## Step 4: Verify Installation
+
+### Launch Isaac Sim GUI
+
+<CodeBlock language="bash" title="Start Isaac Sim">
+{`# Standalone installation
+\${ISAACSIM_PATH}/isaac-sim.sh
+
+# Omniverse installation (Linux)
+~/.local/share/ov/pkg/isaac_sim-2023.1.1/isaac-sim.sh`}
+</CodeBlock>
+
+You should see the Isaac Sim interface with:
+- **Viewport**: 3D scene rendering window
+- **Stage**: Scene hierarchy panel
+- **Property**: Object properties panel
+- **Content Browser**: Asset library
+
+### Load a Sample Scene
+
+1. Click **File → Open**
+2. Navigate to: `isaac_sim/standalone_examples/api/omni.isaac.core/simple_robot.usd`
+3. Press **Play** button (bottom-left)
+4. Check FPS counter (top-right)
+
+<Callout type="success" title="Performance Targets">
+- **RTX 3060**: 30-40 FPS @ 1080p
+- **RTX 4070**: 60-80 FPS @ 1080p
+- **RTX 4090**: 100+ FPS @ 1080p
+
+If FPS is &lt;20, check:
+- NVIDIA driver version (update to latest)
+- GPU utilization in `nvidia-smi` (should be >80%)
+- Background processes using GPU
+</Callout>
+
+---
+
+## Step 5: Python API Configuration
+
+Isaac Sim includes a Python API for programmatic scene creation.
+
+### Test Python Environment
+
+<CodeBlock language="bash" title="Run Python API Test">
+{`# Use Isaac Sim's bundled Python interpreter
+\${ISAACSIM_PYTHON}
+
+# Inside Python shell:
+>>> from omni.isaac.kit import SimulationApp
+>>> simulation_app = SimulationApp({"headless": False})
+>>> print("Isaac Sim Python API loaded successfully!")
+>>> simulation_app.close()`}
+</CodeBlock>
+
+### Create Your First Programmatic Scene
+
+<CodeBlock language="python" title="hello_isaac.py">
+{`#!/usr/bin/env python3
+from omni.isaac.kit import SimulationApp
+
+# Launch Isaac Sim
+simulation_app = SimulationApp({"headless": False})
+
+from omni.isaac.core import World
+from omni.isaac.core.objects import DynamicCuboid
+
+# Create world
+world = World()
+
+# Add a dynamic cube
+cube = DynamicCuboid(
+    prim_path="/World/Cube",
+    name="my_cube",
+    position=[0, 0, 1.0],  # 1m above ground
+    size=0.5,  # 0.5m cube
+    color=[1.0, 0.0, 0.0]  # Red
+)
+
+# Add to world and run simulation
+world.scene.add(cube)
+world.reset()
+
+# Run for 1000 steps
+for i in range(1000):
+    world.step(render=True)
+
+# Cleanup
+simulation_app.close()`}
+</CodeBlock>
+
+**Run the script**:
+
+<CodeBlock language="bash" title="Execute Python Script">
+{`# Make script executable
+chmod +x hello_isaac.py
+
+# Run with Isaac Sim Python
+\${ISAACSIM_PYTHON} hello_isaac.py
+
+# Expected: Isaac Sim window opens, red cube falls and hits ground`}
+</CodeBlock>
+
+<Callout type="success" title="Success Criteria">
+If you see:
+- ✅ Isaac Sim window opens
+- ✅ Red cube appears 1m above ground
+- ✅ Cube falls and bounces (physics working)
+- ✅ No Python errors
+
+Your installation is correct!
+</Callout>
+
+---
+
+## Step 6: Performance Benchmarking
+
+Benchmark your GPU to set realistic expectations for later chapters.
+
+### Simple Scene Benchmark
+
+<CodeBlock language="python" title="benchmark_simple.py">
+{`from omni.isaac.kit import SimulationApp
+simulation_app = SimulationApp({"headless": False})
+
+from omni.isaac.core import World
+from omni.isaac.core.objects import DynamicCuboid
+import time
+
+world = World()
+
+# Create 100 cubes
+for i in range(100):
+    x = (i % 10) * 0.6
+    y = (i // 10) * 0.6
+    cube = DynamicCuboid(
+        prim_path=f"/World/Cube_{i}",
+        position=[x, y, 2.0],
+        size=0.5
+    )
+    world.scene.add(cube)
+
+world.reset()
+
+# Benchmark 1000 steps
+start = time.time()
+for _ in range(1000):
+    world.step(render=True)
+end = time.time()
+
+fps = 1000 / (end - start)
+print(f"Average FPS: {fps:.2f}")
+simulation_app.close()`}
+</CodeBlock>
+
+**Run and record your FPS**:
+
+<CodeBlock language="bash" title="Run Benchmark">
+{`\${ISAACSIM_PYTHON} benchmark_simple.py
+# Output: Average FPS: 45.23 (example for RTX 3060)`}
+</CodeBlock>
+
+### Expected FPS by GPU
+
+| GPU Model | Simple Scene (100 cubes) | Complex Scene (1000 objects) |
+|-----------|-------------------------|------------------------------|
+| RTX 3060 | 40-50 FPS | 15-20 FPS |
+| RTX 4070 | 70-90 FPS | 30-40 FPS |
+| RTX 4090 | 120-150 FPS | 60-80 FPS |
+| A100 (data center) | Varies (headless) | Optimized for batch |
+
+<Callout type="warning" title="Low FPS Troubleshooting">
+If your FPS is significantly lower:
+
+**Check GPU utilization**:
+\`\`\`bash
+watch -n 1 nvidia-smi
+# GPU Util should be >80% during simulation
+\`\`\`
+
+**Common fixes**:
+1. Update NVIDIA driver to latest version
+2. Close other GPU-intensive apps (browsers, games)
+3. Reduce scene resolution: Edit → Preferences → Rendering → Resolution
+4. Enable headless mode for batch workflows (covered in Chapter 2)
+</Callout>
+
+---
+
+## Troubleshooting Common Issues
+
+### Issue 1: "CUDA not found" Error
+
+**Symptoms**: Isaac Sim fails to start with CUDA error
+
+**Fix**:
+<CodeBlock language="bash">
+{`# Verify CUDA path is set
+echo $PATH | grep cuda
+
+# If empty, add to ~/.bashrc:
+export PATH=/usr/local/cuda-11.8/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda-11.8/lib64:$LD_LIBRARY_PATH
+
+# Reload bash config
+source ~/.bashrc`}
+</CodeBlock>
+
+### Issue 2: Low FPS (&lt;15 FPS on RTX 3060+)
+
+**Symptoms**: Simulation runs slowly despite powerful GPU
+
+**Fix**:
+1. Check GPU isn't throttling: `nvidia-smi` (Temp should be &lt;85°C)
+2. Disable V-Sync: Edit → Preferences → Rendering → uncheck "V-Sync"
+3. Reduce render quality: Edit → Preferences → Rendering → Quality: "Medium"
+
+### Issue 3: "Vulkan initialization failed"
+
+**Symptoms**: Black screen or crash on startup
+
+**Fix** (Ubuntu):
+<CodeBlock language="bash">
+{`# Install Vulkan drivers
+sudo apt update
+sudo apt install vulkan-utils mesa-vulkan-drivers
+
+# Verify Vulkan support
+vulkaninfo | grep "deviceName"
+# Should show your GPU model`}
+</CodeBlock>
+
+### Issue 4: Python API Import Errors
+
+**Symptoms**: `ModuleNotFoundError: No module named 'omni.isaac'`
+
+**Fix**:
+<CodeBlock language="bash">
+{`# Always use Isaac Sim's bundled Python, NOT system Python
+# WRONG:
+python3 hello_isaac.py  # ❌ Uses system Python
+
+# CORRECT:
+\${ISAACSIM_PYTHON} hello_isaac.py  # ✅ Uses Isaac Sim Python`}
+</CodeBlock>
+
+---
+
+## Cloud Deployment (Alternative to Local GPU)
+
+If you don't have a local RTX GPU, use cloud instances.
+
+### AWS EC2 G5 Instance Setup
+
+**GPU**: NVIDIA A10G (24GB VRAM) - excellent for Isaac Sim
+
+**Steps**:
+
+1. Launch EC2 instance:
+   - **Instance Type**: `g5.xlarge` (1 GPU, 4 vCPUs, 16GB RAM)
+   - **AMI**: Ubuntu 22.04 Deep Learning AMI (CUDA 11.8 pre-installed)
+   - **Storage**: 200GB gp3 SSD
+
+2. Connect via SSH:
+   <CodeBlock language="bash">
+   {`ssh -i your-key.pem ubuntu@<instance-ip>`}
+   </CodeBlock>
+
+3. Install Isaac Sim standalone (follow Step 3 above)
+
+4. Use headless mode for batch workflows:
+   <CodeBlock language="python" title="Headless Isaac Sim">
+   {`simulation_app = SimulationApp({"headless": True})  # No GUI`}
+   </CodeBlock>
+
+**Cost Estimate**: ~$1.00/hour for g5.xlarge (as of 2025)
+
+<Callout type="info" title="Cost Optimization">
+- Use **Spot Instances** for 70% discount (may be interrupted)
+- **Stop** (don't terminate) instances when not in use
+- Use **Elastic IPs** to maintain same IP across restarts
+</Callout>
+
+### Google Cloud with T4 GPUs
+
+**GPU**: NVIDIA T4 (16GB VRAM) - budget-friendly
+
+**Steps**:
+
+1. Create VM:
+   - **Machine Type**: `n1-standard-4` (4 vCPUs, 15GB RAM)
+   - **GPU**: 1x NVIDIA T4
+   - **Boot Disk**: Ubuntu 22.04 LTS, 200GB SSD
+   - **Region**: Choose one with T4 availability
+
+2. SSH and install CUDA/Isaac Sim (follow Steps 1-3)
+
+**Cost Estimate**: ~$0.35/hour (lower performance than A10G)
+
+---
+
+## Summary
+
+In this chapter, you:
+
+- ✅ Verified GPU compatibility (RTX 3060+ minimum)
+- ✅ Installed CUDA 11.8+ and cuDNN 8.6+
+- ✅ Installed Isaac Sim (standalone or Omniverse)
+- ✅ Launched a sample scene and verified >30 FPS
+- ✅ Configured Python API and ran programmatic scene
+- ✅ Benchmarked GPU performance
+- ✅ Learned cloud deployment options (AWS, Google Cloud)
+
+## What's Next?
+
+<Callout type="success" title="Environment Ready!">
+Your Isaac Sim environment is now configured. In **Chapter 2**, you'll learn to:
+- Create photorealistic warehouse scenes
+- Configure virtual sensor suites (stereo cameras, LiDAR, IMU)
+- Implement domain randomization for lighting and textures
+- Export 10,000 synthetic frames to rosbag2 format
+</Callout>
+
+[**Continue to Chapter 2: Synthetic Data Generation →**](./chapter-2-synthetic-data)
+
+---
+
+**Troubleshooting Resources**:
+- [Isaac Sim Documentation](https://docs.omniverse.nvidia.com/isaacsim/latest/index.html)
+- [NVIDIA Forums](https://forums.developer.nvidia.com/c/omniverse/simulation/69)
+- [GitHub Issues](https://github.com/NVIDIA-Omniverse/IsaacSim-EnvSetup)
+
+**Estimated Completion Time**: 2-3 hours (including downloads and verification)

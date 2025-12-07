@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MDX Frontmatter Schema for Module 2 - Digital Twin",
+  "description": "JSON schema for validating MDX frontmatter in Module 2 documentation chapters",
+  "type": "object",
+  "required": ["id", "title", "sidebar_label", "sidebar_position", "description", "tags"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^(index|chapter-[0-9]+-[a-z-]+)$",
+      "description": "Unique identifier for the chapter (e.g., chapter-1-physics-simulation or index)"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 80,
+      "description": "Display title shown at the top of the page"
+    },
+    "sidebar_label": {
+      "type": "string",
+      "maxLength": 30,
+      "description": "Short label displayed in the sidebar navigation"
+    },
+    "sidebar_position": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Sort order in sidebar (0-indexed, where 0 is first)"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 50,
+      "maxLength": 160,
+      "description": "SEO meta description for the page"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 3,
+      "description": "Categorization tags for search and filtering"
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Optional SEO keywords"
+    },
+    "image": {
+      "type": "string",
+      "pattern": "^/img/modules/module-2/.*\\.(png|jpg|jpeg)$",
+      "description": "Optional Open Graph image path (relative to static/)"
+    },
+    "hide_title": {
+      "type": "boolean",
+      "default": false,
+      "description": "Hide the h1 title at the top of the page"
+    },
+    "hide_table_of_contents": {
+      "type": "boolean",
+      "default": false,
+      "description": "Hide the right sidebar table of contents"
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "id": "chapter-1-physics-simulation",
+      "title": "Chapter 1 - Simulating Physics in Gazebo",
+      "sidebar_label": "Physics Simulation",
+      "sidebar_position": 1,
+      "description": "Learn how to simulate physics, gravity, and collisions in Gazebo for realistic humanoid robot testing and validation.",
+      "tags": ["gazebo", "physics", "simulation", "urdf", "ode"],
+      "keywords": ["gazebo physics", "robot simulation", "urdf modeling", "contact parameters"],
+      "image": "/img/modules/module-2/chapter-1-og-image.png"
+    }
+  ]
+}

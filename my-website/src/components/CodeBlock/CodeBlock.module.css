@@ -1,0 +1,213 @@
+/* CodeBlock Component Styles */
+
+.codeBlockContainer {
+  margin: 1.5rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #1e1e1e;
+}
+
+.codeBlockTitle {
+  background: #2d2d2d;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #3e3e3e;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.85rem;
+  color: #9cdcfe;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.codeBlockWrapper {
+  position: relative;
+}
+
+.copyButton {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: rgba(45, 45, 45, 0.9);
+  border: 1px solid #3e3e3e;
+  border-radius: 4px;
+  color: #d4d4d4;
+  font-size: 0.75rem;
+  font-family: var(--ifm-font-family-base);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.copyButton:hover {
+  background: rgba(45, 45, 45, 1);
+  border-color: #4e4e4e;
+  color: #ffffff;
+}
+
+.copyButton:focus {
+  outline: 2px solid #007acc;
+  outline-offset: 2px;
+}
+
+.copyButton svg {
+  stroke-width: 2;
+}
+
+.copyButtonText {
+  font-weight: 500;
+}
+
+.pre {
+  margin: 0 !important;
+  padding: 1rem !important;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  background: #1e1e1e !important;
+}
+
+.code {
+  display: block;
+  font-family: var(--ifm-font-family-monospace);
+}
+
+.pre div {
+  display: flex;
+  padding: 0.125rem 0;
+}
+
+.lineNumber {
+  display: inline-block;
+  width: 2.5rem;
+  text-align: right;
+  padding-right: 1rem;
+  color: #858585;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.lineContent {
+  flex: 1;
+  padding-right: 3rem; /* Space for copy button */
+}
+
+.highlightedLine {
+  background: rgba(0, 122, 204, 0.15);
+  border-left: 3px solid #007acc;
+  margin-left: -1rem;
+  padding-left: calc(1rem - 3px);
+}
+
+.highlightedLine .lineNumber {
+  color: #9cdcfe;
+  font-weight: 600;
+}
+
+/* Dark mode support (Docusaurus theme) */
+[data-theme='dark'] .codeBlockContainer {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Light mode (override dark theme) */
+[data-theme='light'] .codeBlockContainer {
+  background: #f6f8fa;
+}
+
+[data-theme='light'] .codeBlockTitle {
+  background: #e1e4e8;
+  border-bottom: 1px solid #d1d5da;
+  color: #24292e;
+}
+
+[data-theme='light'] .copyButton {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: #d1d5da;
+  color: #24292e;
+}
+
+[data-theme='light'] .copyButton:hover {
+  background: #ffffff;
+  border-color: #959da5;
+}
+
+[data-theme='light'] .pre {
+  background: #ffffff !important;
+}
+
+[data-theme='light'] .lineNumber {
+  color: #6a737d;
+}
+
+[data-theme='light'] .highlightedLine {
+  background: rgba(3, 102, 214, 0.1);
+  border-left-color: #0366d6;
+}
+
+[data-theme='light'] .highlightedLine .lineNumber {
+  color: #0366d6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .codeBlockTitle {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.75rem;
+  }
+
+  .pre {
+    font-size: 0.8rem;
+    padding: 0.75rem !important;
+  }
+
+  .lineNumber {
+    width: 2rem;
+    padding-right: 0.5rem;
+  }
+
+  .copyButton {
+    top: 0.375rem;
+    right: 0.375rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .copyButtonText {
+    display: none; /* Hide text on mobile, keep icon */
+  }
+}
+
+/* Accessibility: High contrast mode */
+@media (prefers-contrast: high) {
+  .codeBlockContainer {
+    border: 2px solid currentColor;
+  }
+
+  .highlightedLine {
+    border-left-width: 4px;
+  }
+
+  .copyButton {
+    border-width: 2px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .copyButton {
+    display: none;
+  }
+
+  .codeBlockContainer {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+
+  .pre {
+    overflow: visible;
+  }
+}
