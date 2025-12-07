@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { JSX } from 'react';
 import clsx from 'clsx';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
@@ -16,27 +16,26 @@ function HomepageHeader() {
         <div className={styles.buttons}>
           <Link
             className="button button--secondary button--lg"
-            to="/docs/intro"
-            style={{ marginRight: '1rem', marginBottom: '1rem' }}>
+            to="/docs/module-1-robotic-nervous-system/intro"
+            style={{ marginRight: '1rem' }}>
             Start Module 1
           </Link>
           <Link
             className="button button--secondary button--lg"
             to="/docs/module-2-digital-twin"
-            style={{ marginRight: '1rem', marginBottom: '1rem' }}>
+            style={{ marginRight: '1rem' }}>
             Start Module 2
           </Link>
           <Link
             className="button button--secondary button--lg"
             to="/docs/module-3-ai-robot-brain"
-            style={{ marginRight: '1rem', marginBottom: '1rem' }}>
+            style={{ marginRight: '1rem' }}>
             Start Module 3
           </Link>
           <Link
             className="button button--secondary button--lg"
-            to="/docs/module-4-vla"
-            style={{ marginBottom: '1rem' }}>
-            Start Module 4 
+            to="/docs/module-4-vla">
+            Start Module 4
           </Link>
         </div>
       </div>

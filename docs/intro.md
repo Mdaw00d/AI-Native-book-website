@@ -2,46 +2,87 @@
 sidebar_position: 1
 ---
 
-# Tutorial Intro
+# Welcome to AI-Powered Robotics
 
-Let's discover **Docusaurus in less than 5 minutes**.
+Build intelligent robots that understand natural language and execute physical actions in the real world.
+
+## Course Overview
+
+This comprehensive course teaches you how to integrate **Large Language Models (LLMs)** with robotic systems, enabling robots to understand voice commands, plan tasks intelligently, and interact with the physical world.
+
+## Four Learning Modules
+
+### Module 1: The Robotic Nervous System (ROS 2)
+Learn the foundations of robot communication, control, and coordination using ROS 2.
+
+**Topics:**
+- ROS 2 Middleware and DDS
+- Nodes, Topics, and Services
+- Python-to-ROS Bridging with rclpy
+- URDF Modeling for Humanoid Robots
+
+[Start Module 1 →](/docs/module-1-robotic-nervous-system/intro)
+
+### Module 2: Digital Twin
+Create virtual replicas of physical robots for simulation and testing.
+
+**Topics:**
+- Digital twin concepts and architecture
+- Simulation environments
+- Real-time synchronization
+- Virtual testing and validation
+
+[Start Module 2 →](/docs/module-2-digital-twin)
+
+### Module 3: AI Robot Brain
+Implement artificial intelligence for autonomous decision-making and learning.
+
+**Topics:**
+- Machine learning for robotics
+- Neural networks for control
+- Reinforcement learning
+- Autonomous behavior planning
+
+[Start Module 3 →](/docs/module-3-ai-robot-brain)
+
+### Module 4: Vision-Language-Action (VLA)
+**The Convergence of LLMs and Robotics** - Build robots that understand voice commands and execute complex tasks.
+
+**Topics:**
+- Voice-to-Action using OpenAI Whisper
+- Cognitive Planning with LLMs
+- Computer Vision for object identification
+- Navigation and obstacle avoidance
+- Object manipulation
+- **Capstone Project**: The Autonomous Humanoid
+
+[Start Module 4 →](/docs/module-4-vla)
+
+## Prerequisites
+
+- Basic Python programming knowledge
+- Understanding of linear algebra (vectors, matrices)
+- Familiarity with command-line interfaces
+- Docker installed (for simulation environments)
 
 ## Getting Started
 
-Get started by **creating a new site**.
+Choose a module based on your learning goals:
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+1. **New to robotics?** Start with Module 1 to learn ROS 2 fundamentals
+2. **Want to build smart robots?** Jump to Module 4 for LLM-powered robotics
+3. **Interested in simulation?** Begin with Module 2 for digital twins
+4. **Focus on AI?** Explore Module 3 for autonomous intelligence
 
-### What you'll need
+Each module is self-contained with hands-on projects, code examples, and practical exercises.
 
-- [Node.js](https://nodejs.org/en/download/) version 20.0 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
+## What You'll Build
 
-## Generate a new site
+By completing this course, you'll create:
 
-Generate a new Docusaurus site using the **classic template**.
+- A voice-controlled autonomous robot
+- Digital twin simulations
+- AI-powered decision-making systems
+- Complete robot navigation and manipulation pipelines
 
-The classic template will automatically be added to your project after you run the command:
-
-```bash
-npm init docusaurus@latest my-website classic
-```
-
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
-
-The command also installs all necessary dependencies you need to run Docusaurus.
-
-## Start your site
-
-Run the development server:
-
-```bash
-cd my-website
-npm run start
-```
-
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
-
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
-
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+Ready to build the future of robotics? Choose your module and get started!

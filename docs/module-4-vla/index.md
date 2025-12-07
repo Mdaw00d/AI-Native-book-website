@@ -1,33 +1,35 @@
 ---
 id: intro
-title: Vision-Language-Action (VLA) Integration
+title: Module 4 - Vision-Language-Action (VLA)
 sidebar_position: 0
 ---
 
-# Vision-Language-Action (VLA) Integration
+# Module 4: Vision-Language-Action (VLA)
 
-Welcome to the VLA Integration module! This comprehensive guide teaches you how to build intelligent robots that understand voice commands and execute physical actions.
+Welcome to Module 4! This module focuses on **the convergence of LLMs and Robotics**, teaching you how to build intelligent robots that understand voice commands, plan tasks using language models, and execute physical actions.
 
 ## 🎯 Module Overview
 
-Vision-Language-Action (VLA) systems represent the convergence of three critical AI capabilities:
-- **Vision**: Perceiving and understanding the environment through cameras
-- **Language**: Processing natural language commands and generating structured plans
-- **Action**: Executing physical tasks through navigation and manipulation
+This module explores how Large Language Models (LLMs) are revolutionizing robotics by enabling natural human-robot interaction and intelligent task planning. You'll learn to:
 
-This module provides hands-on experience building a complete VLA pipeline from scratch.
+- **Voice-to-Action**: Use OpenAI Whisper to convert voice commands into actionable instructions
+- **Cognitive Planning**: Leverage LLMs to translate natural language (e.g., "Clean the room") into a sequence of ROS 2 actions
+- **Vision-Language Integration**: Combine computer vision with language understanding for autonomous decision-making
+- **Full System Integration**: Build an autonomous humanoid robot that integrates all these capabilities
+
+This module provides hands-on experience building a complete VLA pipeline from voice input to robot action.
 
 ## 📚 Learning Outcomes
 
 By completing this module, you will:
 
-1. **Understand VLA Architecture**: Learn how vision, language, and action systems integrate
-2. **Implement Voice Interfaces**: Use Whisper for speech-to-text transcription
-3. **Build LLM Planners**: Convert natural language to structured robot task plans
-4. **Deploy Computer Vision**: Detect objects and estimate 3D poses with YOLOv8
-5. **Control Robot Navigation**: Use ROS 2 Nav2 for autonomous movement
-6. **Program Manipulation**: Implement pick-and-place with MoveIt 2
-7. **Integrate Complete Systems**: Combine all components into a working pipeline
+1. **Understand the Convergence of LLMs and Robotics**: Learn how language models enable natural human-robot interaction
+2. **Implement Voice-to-Action Systems**: Use OpenAI Whisper for converting speech to robot commands
+3. **Build Cognitive Planning Systems**: Use LLMs to translate natural language into executable ROS 2 action sequences
+4. **Deploy Computer Vision**: Detect and identify objects in the robot's environment
+5. **Control Robot Navigation**: Navigate obstacles autonomously using ROS 2 Nav2
+6. **Program Manipulation**: Implement object grasping and manipulation
+7. **Complete the Autonomous Humanoid Capstone**: Integrate all components into a robot that receives voice commands, plans paths, navigates, identifies objects, and manipulates them
 
 ## 🛠️ Prerequisites
 
@@ -50,24 +52,24 @@ By completing this module, you will:
 
 ## 📖 Module Structure
 
-This module consists of 10 progressive sections:
+This module consists of 10 progressive sections focusing on the convergence of LLMs and Robotics:
 
-### Part 1: Foundations
-1. **[Introduction](01-introduction.md)** - VLA convergence and real-world applications
-2. **[Voice-to-Action](02-voice-to-action.md)** - Speech recognition with Whisper
-3. **[NLU for Robotics](03-nlu-for-robotics.md)** - Natural language understanding
+### Part 1: Voice-to-Action Foundations
+1. **[Introduction](01-introduction.md)** - The convergence of LLMs and Robotics
+2. **[Voice-to-Action](02-voice-to-action.md)** - Using OpenAI Whisper for voice commands
+3. **[NLU for Robotics](03-nlu-for-robotics.md)** - Natural language understanding basics
 
-### Part 2: Planning
-4. **[LLM Planning](04-llm-planning.md)** - Task planning with large language models
-5. **[ROS 2 Fundamentals](05-ros2-fundamentals.md)** - Robot Operating System basics
+### Part 2: Cognitive Planning with LLMs
+4. **[LLM Planning](04-llm-planning.md)** - Translating natural language to ROS 2 actions
+5. **[ROS 2 Fundamentals](05-ros2-fundamentals.md)** - Robot Operating System essentials
 
 ### Part 3: Perception & Control
-6. **[Computer Vision](06-computer-vision.md)** - Object detection and 3D pose estimation
-7. **[Navigation](07-navigation.md)** - Autonomous navigation with Nav2
-8. **[Manipulation](08-manipulation.md)** - Grasping and pick-place operations
+6. **[Computer Vision](06-computer-vision.md)** - Object identification using computer vision
+7. **[Navigation](07-navigation.md)** - Path planning and obstacle avoidance
+8. **[Manipulation](08-manipulation.md)** - Object grasping and manipulation
 
-### Part 4: Integration
-9. **[Capstone Project](09-capstone-project.md)** - End-to-end VLA system integration
+### Part 4: The Autonomous Humanoid
+9. **[Capstone Project](09-capstone-project.md)** - Build a voice-controlled autonomous humanoid
 10. **[Debugging & Troubleshooting](10-debugging.md)** - Common issues and solutions
 
 ## 🚀 Quick Start
@@ -147,9 +149,7 @@ Track your progress with:
 - `/code-examples/tests/` - Unit and integration tests
 
 ### Community
-- [GitHub Discussions](link-to-discussions)
-- [Discord Channel](link-to-discord)
-- [Office Hours](link-to-calendar)
+Resources and community links will be available soon.
 
 ## ⚠️ Important Notes
 
@@ -183,13 +183,13 @@ You'll know you've mastered this module when you can:
 **Stuck on something?**
 1. Check the [Debugging Guide](10-debugging.md)
 2. Review [Troubleshooting FAQ](troubleshooting.md)
-3. Search [GitHub Issues](link-to-issues)
-4. Ask in [Discord](link-to-discord)
-5. Attend office hours
+3. Search GitHub Issues (coming soon)
+4. Ask in Discord (coming soon)
+5. Attend office hours (coming soon)
 
 ## 📝 License
 
-This educational content is provided under [MIT License](LICENSE). Code examples may be used freely with attribution.
+This educational content is provided for educational purposes. Code examples may be used freely with attribution.
 
 ---
 
