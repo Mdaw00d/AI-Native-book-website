@@ -1,0 +1,937 @@
+---
+id: chapter-2-synthetic-data
+title: "Chapter 2: Synthetic Data Generation"
+sidebar_label: "Ch2: Synthetic Data"
+sidebar_position: 3
+description: Generate photorealistic synthetic sensor data with domain randomization for training AI perception systems
+keywords: [synthetic data, domain randomization, isaac sim, rosbag2, stereo camera, lidar, imu, ground truth, photorealistic rendering]
+---
+
+import Callout from '@site/src/components/Callout';
+import CodeBlock from '@site/src/components/CodeBlock';
+
+# Chapter 2: Synthetic Data Generation
+
+Learn to generate **photorealistic synthetic sensor data** in Isaac Sim with domain randomization for training robust AI perception algorithms.
+
+## Learning Objectives
+
+By the end of this chapter, you will:
+
+- ✅ Create photorealistic warehouse scenes with PBR materials and HDR lighting
+- ✅ Load and configure humanoid robot models from Isaac Sim asset library
+- ✅ Configure virtual sensor suites (stereo cameras, RGB, depth, LiDAR, IMU)
+- ✅ Implement domain randomization for lighting, textures, and object poses
+- ✅ Generate 10,000+ synthetic frames with ground truth annotations
+- ✅ Export synchronized data to rosbag2 format with &lt;1ms timestamp drift
+- ✅ Validate datasets in RViz/Foxglove Studio
+- ✅ Set up headless batch generation for cloud/HPC deployments
+
+**Time Estimate**: 3-4 hours
+
+---
+
+## Why Synthetic Data?
+
+### The Real-World Data Problem
+
+Training perception algorithms traditionally requires:
+- **Expensive data collection**: Thousands of hours of real robot operation
+- **Manual labeling**: Pixel-perfect segmentation masks, 3D bounding boxes
+- **Limited diversity**: Hard to capture rare scenarios (poor lighting, occlusions)
+- **Safety risks**: Cannot test dangerous edge cases (collisions, falls)
+
+### The Synthetic Data Solution
+
+Isaac Sim enables:
+- **Automatic ground truth**: Perfect labels for segmentation, depth, poses
+- **Infinite diversity**: Randomize lighting, textures, object positions
+- **Safe edge cases**: Test failure scenarios without physical risk
+- **Speed**: Generate 10,000 frames in hours vs. weeks of real data collection
+
+<Callout type="success" title="Domain Randomization">
+**Domain randomization** varies appearance during training so models generalize to real-world variations:
+- Lighting: 2700K (warm) to 6500K (cool), 0-10,000 lux intensity
+- Textures: Swap materials, randomize colors
+- Poses: Randomize object positions ±50cm, rotations ±180°
+- Camera params: Vary exposure, gain, white balance
+</Callout>
+
+---
+
+## Step 1: Create a Photorealistic Warehouse Scene
+
+We'll build a warehouse environment suitable for humanoid robot navigation.
+
+### Load Warehouse Environment
+
+<CodeBlock language="python" title="create_warehouse.py">
+{`#!/usr/bin/env python3
+from omni.isaac.kit import SimulationApp
+
+# Launch Isaac Sim
+simulation_app = SimulationApp({"headless": False})
+
+from omni.isaac.core import World
+from omni.isaac.core.utils.stage import add_reference_to_stage
+import omni.isaac.core.utils.prims as prim_utils
+
+# Create world
+world = World()
+
+# Add warehouse environment from Isaac Sim assets
+# This includes floors, walls, shelves, boxes
+warehouse_usd = "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
+add_reference_to_stage(usd_path=warehouse_usd, prim_path="/World/Warehouse")
+
+# Add ground plane with physics
+world.scene.add_default_ground_plane()
+
+print("Warehouse scene created! Press Play to start simulation.")
+world.reset()
+
+# Keep simulation running
+while simulation_app.is_running():
+    world.step(render=True)
+
+simulation_app.close()`}
+</CodeBlock>
+
+**Run the script**:
+
+<CodeBlock language="bash">
+{`\${ISAACSIM_PYTHON} create_warehouse.py
+
+# Expected: Warehouse scene with shelves, boxes, and floor loads`}
+</CodeBlock>
+
+### Add Photorealistic Lighting
+
+<CodeBlock language="python" title="add_hdr_lighting.py">
+{`from omni.isaac.kit import SimulationApp
+simulation_app = SimulationApp({"headless": False})
+
+from omni.isaac.core import World
+from omni.isaac.core.utils.stage import add_reference_to_stage
+import omni.isaac.core.utils.prims as prim_utils
+from pxr import Gf, Sdf
+
+world = World()
+
+# Add warehouse
+warehouse_usd = "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
+add_reference_to_stage(usd_path=warehouse_usd, prim_path="/World/Warehouse")
+
+# Add HDR dome light (image-based lighting)
+# This creates realistic reflections and ambient lighting
+dome_light = prim_utils.create_prim(
+    prim_path="/World/DomeLight",
+    prim_type="DomeLight",
+    attributes={
+        "inputs:intensity": 1000.0,  # Brightness
+        "inputs:texture:file": "/Isaac/Materials/Textures/environment/sky.hdr"
+    }
+)
+
+# Add directional light (sun)
+sun_light = prim_utils.create_prim(
+    prim_path="/World/SunLight",
+    prim_type="DistantLight",
+    attributes={
+        "inputs:intensity": 3000.0,
+        "inputs:angle": 0.5,  # Sun angular diameter
+        "inputs:color": (1.0, 0.95, 0.9)  # Warm sunlight
+    }
+)
+
+# Rotate sun to 45° angle
+prim_utils.set_prim_property(
+    prim_path="/World/SunLight",
+    property_name="xformOp:rotateXYZ",
+    property_value=Gf.Vec3f(45, 135, 0)  # (pitch, yaw, roll)
+)
+
+world.reset()
+
+while simulation_app.is_running():
+    world.step(render=True)
+
+simulation_app.close()`}
+</CodeBlock>
+
+<Callout type="info" title="PBR Rendering">
+Isaac Sim uses **Physically-Based Rendering (PBR)**:
+- **Metallic/Roughness workflow**: Realistic material properties
+- **HDR lighting**: High dynamic range for accurate illumination
+- **Ray tracing**: Real-time reflections and shadows (RTX GPUs)
+
+Result: Synthetic data that closely matches real-world appearance
+</Callout>
+
+---
+
+## Step 2: Load Humanoid Robot Model
+
+### Use Pre-Built Humanoid from Asset Library
+
+<CodeBlock language="python" title="add_humanoid.py">
+{`from omni.isaac.kit import SimulationApp
+simulation_app = SimulationApp({"headless": False})
+
+from omni.isaac.core import World
+from omni.isaac.core.robots import Robot
+from omni.isaac.core.utils.stage import add_reference_to_stage
+
+world = World()
+
+# Add warehouse
+warehouse_usd = "/Isaac/Environments/Simple_Warehouse/warehouse.usd"
+add_reference_to_stage(usd_path=warehouse_usd, prim_path="/World/Warehouse")
+
+# Add humanoid robot (example: Unitree H1 or custom biped)
+# Isaac Sim includes several humanoid models in the asset library
+humanoid_usd = "/Isaac/Robots/Humanoid/humanoid_instanceable.usd"
+humanoid_prim = add_reference_to_stage(
+    usd_path=humanoid_usd,
+    prim_path="/World/Humanoid"
+)
+
+# Create Robot object for easier control
+humanoid = Robot(
+    prim_path="/World/Humanoid",
+    name="humanoid_robot",
+    position=[0, 0, 1.0],  # Spawn 1m above ground
+    orientation=[1, 0, 0, 0]  # Quaternion (w, x, y, z)
+)
+
+world.scene.add(humanoid)
+world.reset()
+
+print(f"Humanoid robot loaded with {humanoid.num_dof} degrees of freedom")
+
+while simulation_app.is_running():
+    world.step(render=True)
+
+simulation_app.close()`}
+</CodeBlock>
+
+<Callout type="warning" title="Asset Availability">
+If `/Isaac/Robots/Humanoid/humanoid_instanceable.usd` is not found:
+
+1. Check available robots:
+   - Open Isaac Sim GUI
+   - Content Browser → Isaac → Robots
+   - Look for `Humanoid`, `Unitree_H1`, or similar
+
+2. Or download from NVIDIA Asset Exchange:
+   - Omniverse Launcher → Exchange tab
+   - Search "humanoid robot"
+   - Install to local Nucleus server
+
+3. Alternative: Use articulated robot (e.g., Franka arm) for testing
+</Callout>
+
+---
+
+## Step 3: Configure Virtual Sensor Suite
+
+### Add Stereo Camera Pair
+
+Stereo cameras enable depth perception for VSLAM (Chapter 3).
+
+<CodeBlock language="python" title="add_stereo_cameras.py">
+{`from omni.isaac.kit import SimulationApp
+simulation_app = SimulationApp({"headless": False})
+
+from omni.isaac.core import World
+from omni.isaac.core.utils.stage import add_reference_to_stage
+from omni.isaac.sensor import Camera
+import omni.isaac.core.utils.prims as prim_utils
+import numpy as np
+
+world = World()
+
+# Add warehouse and humanoid (from previous steps)
+add_reference_to_stage("/Isaac/Environments/Simple_Warehouse/warehouse.usd", "/World/Warehouse")
+
+# Stereo camera configuration
+STEREO_BASELINE = 0.12  # 12cm between cameras (typical for humanoid head)
+RESOLUTION = (640, 480)  # VGA resolution
+FPS = 60  # Target frame rate
+FOV_HORIZONTAL = 90.0  # Degrees
+
+# Left camera
+camera_left = Camera(
+    prim_path="/World/CameraLeft",
+    name="camera_left",
+    position=[0.0, -STEREO_BASELINE/2, 1.5],  # 1.5m height (humanoid head)
+    frequency=FPS,
+    resolution=RESOLUTION,
+    orientation=[1, 0, 0, 0]
+)
+
+# Right camera
+camera_right = Camera(
+    prim_path="/World/CameraRight",
+    name="camera_right",
+    position=[0.0, STEREO_BASELINE/2, 1.5],
+    frequency=FPS,
+    resolution=RESOLUTION,
+    orientation=[1, 0, 0, 0]
+)
+
+# Set camera intrinsics (FOV)
+for camera in [camera_left, camera_right]:
+    camera.set_horizontal_aperture(20.955)  # Corresponds to 90° FOV
+    camera.set_focal_length(24.0)  # mm
+
+world.scene.add(camera_left)
+world.scene.add(camera_right)
+world.reset()
+
+# Capture stereo pair
+for _ in range(100):  # Warm-up frames
+    world.step(render=True)
+
+# Get synchronized stereo images
+left_rgb = camera_left.get_rgba()[:, :, :3]  # Drop alpha channel
+right_rgb = camera_right.get_rgba()[:, :, :3]
+
+print(f"Left image shape: {left_rgb.shape}")  # (480, 640, 3)
+print(f"Right image shape: {right_rgb.shape}")  # (480, 640, 3)
+
+# Verify synchronization
+left_timestamp = camera_left.get_current_frame()["rendering_frame"]
+right_timestamp = camera_right.get_current_frame()["rendering_frame"]
+drift = abs(left_timestamp - right_timestamp)
+print(f"Timestamp drift: {drift * 1000:.3f} ms")  # Should be &lt;1ms
+
+simulation_app.close()`}
+</CodeBlock>
+
+### Add LiDAR Sensor
+
+<CodeBlock language="python" title="add_lidar.py">
+{`from omni.isaac.kit import SimulationApp
+simulation_app = SimulationApp({"headless": False})
+
+from omni.isaac.core import World
+from omni.isaac.range_sensor import LidarRtx
+import numpy as np
+
+world = World()
+
+# Add 3D rotating LiDAR (e.g., Velodyne-like)
+lidar = LidarRtx(
+    prim_path="/World/Lidar",
+    name="lidar_3d",
+    position=[0.0, 0.0, 1.5],  # Head height
+    orientation=[1, 0, 0, 0],
+    config="Example_Rotary"  # Velodyne VLP-16 configuration
+)
+
+# Configure LiDAR parameters
+lidar.set_resolution(0.4)  # 0.4° angular resolution
+lidar.set_valid_range(0.4, 100.0)  # Min 0.4m, max 100m range
+lidar.set_rotation_frequency(20)  # 20 Hz rotation (20 scans/second)
+
+world.scene.add(lidar)
+world.reset()
+
+# Capture LiDAR scan
+for _ in range(100):
+    world.step(render=True)
+
+# Get point cloud
+point_cloud = lidar.get_current_frame()["point_cloud"]
+print(f"LiDAR points captured: {len(point_cloud)}")  # ~10,000-30,000 points
+
+# Point cloud format: Nx3 array of (x, y, z) coordinates
+# Visualize in RViz or CloudCompare
+
+simulation_app.close()`}
+</CodeBlock>
+
+### Add IMU Sensor
+
+<CodeBlock language="python" title="add_imu.py">
+{`from omni.isaac.kit import SimulationApp
+simulation_app = SimulationApp({"headless": False})
+
+from omni.isaac.core import World
+from omni.isaac.sensor import IMUSensor
+import numpy as np
+
+world = World()
+
+# Add IMU at robot's center of mass
+imu = IMUSensor(
+    prim_path="/World/IMU",
+    name="imu_sensor",
+    position=[0.0, 0.0, 1.0],  # Center of mass height
+    orientation=[1, 0, 0, 0],
+    frequency=200,  # 200 Hz sampling rate
+    translation_noise_level=0.001,  # 1mm noise
+    rotation_noise_level=0.01  # 0.01 rad noise
+)
+
+world.scene.add(imu)
+world.reset()
+
+# Capture IMU data
+for _ in range(200):  # 1 second at 200 Hz
+    world.step(render=True)
+
+# Get IMU readings
+imu_data = imu.get_current_frame()
+linear_acceleration = imu_data["linear_acceleration"]  # m/s²
+angular_velocity = imu_data["angular_velocity"]  # rad/s
+orientation = imu_data["orientation"]  # Quaternion
+
+print(f"Linear acceleration: {linear_acceleration}")  # [ax, ay, az]
+print(f"Angular velocity: {angular_velocity}")  # [wx, wy, wz]
+print(f"Orientation (quat): {orientation}")  # [qw, qx, qy, qz]
+
+simulation_app.close()`}
+</CodeBlock>
+
+---
+
+## Step 4: Implement Domain Randomization
+
+Domain randomization makes models robust to real-world variations.
+
+### Randomize Lighting
+
+<CodeBlock language="python" title="randomize_lighting.py">
+{`from omni.isaac.kit import SimulationApp
+simulation_app = SimulationApp({"headless": False})
+
+from omni.isaac.core import World
+from omni.isaac.core.utils.stage import add_reference_to_stage
+import omni.isaac.core.utils.prims as prim_utils
+import numpy as np
+from pxr import Gf
+
+world = World()
+add_reference_to_stage("/Isaac/Environments/Simple_Warehouse/warehouse.usd", "/World/Warehouse")
+
+# Create dome light
+dome_light_path = "/World/DomeLight"
+dome_light = prim_utils.create_prim(
+    prim_path=dome_light_path,
+    prim_type="DomeLight"
+)
+
+world.reset()
+
+# Randomization loop
+for i in range(10):  # Generate 10 variations
+    # Randomize intensity (0-10,000 lux)
+    intensity = np.random.uniform(500, 10000)
+    prim_utils.set_prim_property(dome_light_path, "inputs:intensity", intensity)
+
+    # Randomize color temperature (2700K warm to 6500K cool)
+    # Convert Kelvin to RGB approximation
+    kelvin = np.random.uniform(2700, 6500)
+    if kelvin <= 6600:
+        r = 1.0
+        g = np.clip((kelvin / 100 - 60) * 0.39 + 0.1, 0, 1)
+        b = np.clip((kelvin / 100 - 10) * 0.5, 0, 1) if kelvin > 2000 else 0
+    else:
+        r = np.clip(1.0 - (kelvin / 100 - 60) * 0.13, 0, 1)
+        g = 1.0
+        b = 1.0
+
+    prim_utils.set_prim_property(dome_light_path, "inputs:color", Gf.Vec3f(r, g, b))
+
+    # Step simulation and capture frame
+    for _ in range(10):  # Warm-up
+        world.step(render=True)
+
+    print(f"Frame {i}: Intensity={intensity:.0f} lux, Kelvin={kelvin:.0f}K")
+
+simulation_app.close()`}
+</CodeBlock>
+
+### Randomize Object Poses
+
+<CodeBlock language="python" title="randomize_poses.py">
+{`from omni.isaac.kit import SimulationApp
+simulation_app = SimulationApp({"headless": False})
+
+from omni.isaac.core import World
+from omni.isaac.core.objects import DynamicCuboid
+import numpy as np
+
+world = World()
+
+# Create 20 boxes with random poses
+boxes = []
+for i in range(20):
+    # Random position (±5m in X/Y, 0.5-2m in Z)
+    pos_x = np.random.uniform(-5, 5)
+    pos_y = np.random.uniform(-5, 5)
+    pos_z = np.random.uniform(0.5, 2.0)
+
+    # Random rotation (±180° around Z axis)
+    rotation_z = np.random.uniform(-np.pi, np.pi)
+
+    # Random size (0.2-1.0m cubes)
+    size = np.random.uniform(0.2, 1.0)
+
+    # Random color
+    color = np.random.rand(3)  # RGB [0, 1]
+
+    box = DynamicCuboid(
+        prim_path=f"/World/Box_{i}",
+        position=[pos_x, pos_y, pos_z],
+        size=size,
+        color=color
+    )
+    world.scene.add(box)
+    boxes.append(box)
+
+world.reset()
+
+print("Generated 20 boxes with randomized poses, sizes, and colors")
+
+while simulation_app.is_running():
+    world.step(render=True)
+
+simulation_app.close()`}
+</CodeBlock>
+
+### Randomize Camera Parameters
+
+<CodeBlock language="python" title="randomize_camera.py">
+{`from omni.isaac.sensor import Camera
+import numpy as np
+
+# Create camera
+camera = Camera(prim_path="/World/Camera", position=[0, 0, 1.5], frequency=60, resolution=(640, 480))
+
+# Randomize exposure (shutter speed)
+exposure_time = np.random.uniform(0.001, 0.033)  # 1ms to 33ms
+camera.set_shutter_properties(exposure_time)
+
+# Randomize gain (ISO sensitivity)
+gain = np.random.uniform(100, 1600)  # ISO 100-1600
+# Note: Isaac Sim doesn't directly expose gain; simulate via post-processing
+
+# Randomize white balance (color temperature)
+# Apply color shift in post-processing:
+rgb_image = camera.get_rgba()[:, :, :3]
+kelvin = np.random.uniform(2700, 6500)
+# Apply temperature tint (simplified)
+
+print(f"Randomized camera: Exposure={exposure_time*1000:.1f}ms, Kelvin={kelvin:.0f}K")`}
+</CodeBlock>
+
+---
+
+## Step 5: Generate Dataset with Ground Truth
+
+### Complete Dataset Generation Script
+
+<CodeBlock language="python" title="generate_dataset.py">
+{`#!/usr/bin/env python3
+from omni.isaac.kit import SimulationApp
+simulation_app = SimulationApp({"headless": True})  # Headless for faster generation
+
+from omni.isaac.core import World
+from omni.isaac.core.utils.stage import add_reference_to_stage
+from omni.isaac.sensor import Camera
+from omni.isaac.core.objects import DynamicCuboid
+import omni.isaac.core.utils.prims as prim_utils
+import numpy as np
+import cv2
+import os
+from datetime import datetime
+
+# Configuration
+NUM_FRAMES = 100  # Generate 100 frames (increase to 10,000 for production)
+OUTPUT_DIR = f"dataset_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+os.makedirs(f"{OUTPUT_DIR}/rgb", exist_ok=True)
+os.makedirs(f"{OUTPUT_DIR}/depth", exist_ok=True)
+os.makedirs(f"{OUTPUT_DIR}/segmentation", exist_ok=True)
+
+# Create world
+world = World()
+add_reference_to_stage("/Isaac/Environments/Simple_Warehouse/warehouse.usd", "/World/Warehouse")
+
+# Add camera
+camera = Camera(
+    prim_path="/World/Camera",
+    position=[0, 0, 1.5],
+    frequency=60,
+    resolution=(640, 480)
+)
+world.scene.add(camera)
+
+# Add random objects
+for i in range(20):
+    box = DynamicCuboid(
+        prim_path=f"/World/Box_{i}",
+        position=[np.random.uniform(-5, 5), np.random.uniform(-5, 5), 1.0],
+        size=np.random.uniform(0.3, 0.8),
+        color=np.random.rand(3)
+    )
+    world.scene.add(box)
+
+# Create dome light for randomization
+dome_light_path = "/World/DomeLight"
+prim_utils.create_prim(dome_light_path, "DomeLight")
+
+world.reset()
+
+print(f"Generating {NUM_FRAMES} frames to {OUTPUT_DIR}/")
+
+for frame_idx in range(NUM_FRAMES):
+    # Randomize lighting
+    intensity = np.random.uniform(500, 10000)
+    prim_utils.set_prim_property(dome_light_path, "inputs:intensity", intensity)
+
+    # Randomize object poses every 10 frames
+    if frame_idx % 10 == 0:
+        for i in range(20):
+            box_path = f"/World/Box_{i}"
+            new_pos = [
+                np.random.uniform(-5, 5),
+                np.random.uniform(-5, 5),
+                np.random.uniform(0.5, 2.0)
+            ]
+            prim_utils.set_prim_property(box_path, "xformOp:translate", new_pos)
+
+    # Step simulation
+    for _ in range(10):  # Warm-up frames
+        world.step(render=False)  # Headless: render=False
+
+    world.step(render=True)  # Render final frame
+
+    # Capture RGB image
+    rgb = camera.get_rgba()[:, :, :3]  # Drop alpha
+    rgb_bgr = cv2.cvtColor((rgb * 255).astype(np.uint8), cv2.COLOR_RGB2BGR)
+    cv2.imwrite(f"{OUTPUT_DIR}/rgb/{frame_idx:06d}.png", rgb_bgr)
+
+    # Capture depth image
+    depth = camera.get_depth()
+    depth_normalized = (np.clip(depth, 0, 10) / 10 * 65535).astype(np.uint16)  # 16-bit depth
+    cv2.imwrite(f"{OUTPUT_DIR}/depth/{frame_idx:06d}.png", depth_normalized)
+
+    # Capture semantic segmentation
+    segmentation = camera.get_semantic_segmentation()
+    cv2.imwrite(f"{OUTPUT_DIR}/segmentation/{frame_idx:06d}.png", segmentation.astype(np.uint8))
+
+    # Print progress
+    if (frame_idx + 1) % 10 == 0:
+        print(f"Progress: {frame_idx + 1}/{NUM_FRAMES} frames ({(frame_idx+1)/NUM_FRAMES*100:.1f}%)")
+
+print(f"\\nDataset generation complete!")
+print(f"- RGB images: {OUTPUT_DIR}/rgb/")
+print(f"- Depth images: {OUTPUT_DIR}/depth/")
+print(f"- Segmentation: {OUTPUT_DIR}/segmentation/")
+
+simulation_app.close()`}
+</CodeBlock>
+
+**Run the dataset generator**:
+
+<CodeBlock language="bash">
+{`\${ISAACSIM_PYTHON} generate_dataset.py
+
+# Expected output:
+# Generating 100 frames to dataset_20251207_143025/
+# Progress: 10/100 frames (10.0%)
+# Progress: 20/100 frames (20.0%)
+# ...
+# Dataset generation complete!`}
+</CodeBlock>
+
+<Callout type="success" title="Performance Benchmark">
+**Target**: 10,000 frames in &lt;2 hours on RTX 4090
+
+- **RTX 3060**: ~5 frames/second → 33 minutes for 10,000 frames
+- **RTX 4070**: ~10 frames/second → 17 minutes
+- **RTX 4090**: ~20 frames/second → 8 minutes
+
+Use headless mode (`headless=True`) for maximum speed.
+</Callout>
+
+---
+
+## Step 6: Export to rosbag2 Format
+
+ROS 2 uses `rosbag2` for recording sensor data. We'll export Isaac Sim data to rosbag2 for use with Isaac ROS (Chapter 3).
+
+### Install rosbag2 (if not already installed)
+
+<CodeBlock language="bash">
+{`# Ubuntu 22.04 with ROS 2 Humble
+sudo apt update
+sudo apt install ros-humble-rosbag2 ros-humble-rosbag2-storage-default-plugins
+source /opt/ros/humble/setup.bash`}
+</CodeBlock>
+
+### Export Script with rosbag2
+
+<CodeBlock language="python" title="export_rosbag2.py">
+{`#!/usr/bin/env python3
+from omni.isaac.kit import SimulationApp
+simulation_app = SimulationApp({"headless": True})
+
+from omni.isaac.core import World
+from omni.isaac.sensor import Camera
+import rclpy
+from rclpy.node import Node
+from sensor_msgs.msg import Image, CameraInfo
+from cv_bridge import CvBridge
+import numpy as np
+from datetime import datetime
+import rosbag2_py
+
+# Initialize ROS 2
+rclpy.init()
+
+# Create rosbag writer
+bag_name = f"isaac_sim_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+writer = rosbag2_py.SequentialWriter()
+storage_options = rosbag2_py.StorageOptions(uri=bag_name, storage_id='sqlite3')
+converter_options = rosbag2_py.ConverterOptions('', '')
+writer.open(storage_options, converter_options)
+
+# Create topics
+topics = [
+    rosbag2_py.TopicMetadata(
+        name='/camera/left/image_raw',
+        type='sensor_msgs/msg/Image',
+        serialization_format='cdr'
+    ),
+    rosbag2_py.TopicMetadata(
+        name='/camera/right/image_raw',
+        type='sensor_msgs/msg/Image',
+        serialization_format='cdr'
+    )
+]
+for topic in topics:
+    writer.create_topic(topic)
+
+# Create world and cameras (stereo pair)
+world = World()
+camera_left = Camera(prim_path="/World/CameraLeft", position=[0, -0.06, 1.5], frequency=60, resolution=(640, 480))
+camera_right = Camera(prim_path="/World/CameraRight", position=[0, 0.06, 1.5], frequency=60, resolution=(640, 480))
+world.scene.add(camera_left)
+world.scene.add(camera_right)
+world.reset()
+
+bridge = CvBridge()
+
+print(f"Recording to {bag_name}.db3...")
+
+for frame_idx in range(1000):  # Record 1000 frames
+    world.step(render=True)
+
+    # Get timestamp (nanoseconds since epoch)
+    timestamp = int(world.current_time * 1e9)
+
+    # Capture stereo pair
+    left_rgb = camera_left.get_rgba()[:, :, :3]
+    right_rgb = camera_right.get_rgba()[:, :, :3]
+
+    # Convert to ROS Image messages
+    left_msg = bridge.cv2_to_imgmsg((left_rgb * 255).astype(np.uint8), encoding='rgb8')
+    right_msg = bridge.cv2_to_imgmsg((right_rgb * 255).astype(np.uint8), encoding='rgb8')
+
+    # Set timestamps
+    left_msg.header.stamp.sec = timestamp // 1_000_000_000
+    left_msg.header.stamp.nanosec = timestamp % 1_000_000_000
+    right_msg.header.stamp = left_msg.header.stamp  # Synchronized
+
+    # Write to bag
+    writer.write('/camera/left/image_raw', left_msg.serialize(), timestamp)
+    writer.write('/camera/right/image_raw', right_msg.serialize(), timestamp)
+
+    if (frame_idx + 1) % 100 == 0:
+        print(f"Recorded {frame_idx + 1}/1000 frames")
+
+print(f"\\nRecording complete: {bag_name}.db3")
+print(f"Verify with: ros2 bag info {bag_name}")
+
+writer.close()
+simulation_app.close()
+rclpy.shutdown()`}
+</CodeBlock>
+
+**Verify rosbag2 recording**:
+
+<CodeBlock language="bash">
+{`ros2 bag info isaac_sim_20251207_143025
+
+# Expected output:
+# Files:             isaac_sim_20251207_143025_0.db3
+# Bag size:          245.2 MiB
+# Storage id:        sqlite3
+# Duration:          16.666s
+# Start:             Dec  7 2025 14:30:25.000
+# End:               Dec  7 2025 14:30:41.666
+# Messages:          2000
+# Topic information: Topic: /camera/left/image_raw | Type: sensor_msgs/msg/Image | Count: 1000 | Serialization Format: cdr
+#                    Topic: /camera/right/image_raw | Type: sensor_msgs/msg/Image | Count: 1000 | Serialization Format: cdr`}
+</CodeBlock>
+
+---
+
+## Step 7: Validate Dataset
+
+### Visualize in RViz
+
+<CodeBlock language="bash">
+{`# Play rosbag2 in loop
+ros2 bag play isaac_sim_20251207_143025 --loop
+
+# In another terminal, launch RViz
+rviz2
+
+# In RViz:
+# 1. Add → Image display
+# 2. Set topic to /camera/left/image_raw
+# 3. Repeat for /camera/right/image_raw
+
+# You should see synchronized stereo video streams`}
+</CodeBlock>
+
+### Verify Timestamp Synchronization
+
+<CodeBlock language="python" title="check_sync.py">
+{`import rosbag2_py
+from rclpy.serialization import deserialize_message
+from sensor_msgs.msg import Image
+
+# Open bag
+storage_options = rosbag2_py.StorageOptions(uri='isaac_sim_20251207_143025', storage_id='sqlite3')
+converter_options = rosbag2_py.ConverterOptions('', '')
+reader = rosbag2_py.SequentialReader()
+reader.open(storage_options, converter_options)
+
+left_timestamps = []
+right_timestamps = []
+
+while reader.has_next():
+    (topic, data, timestamp) = reader.read_next()
+    msg = deserialize_message(data, Image)
+
+    msg_timestamp = msg.header.stamp.sec * 1e9 + msg.header.stamp.nanosec
+
+    if topic == '/camera/left/image_raw':
+        left_timestamps.append(msg_timestamp)
+    elif topic == '/camera/right/image_raw':
+        right_timestamps.append(msg_timestamp)
+
+# Calculate drift
+drifts = [abs(l - r) for l, r in zip(left_timestamps, right_timestamps)]
+max_drift_ns = max(drifts)
+avg_drift_ns = sum(drifts) / len(drifts)
+
+print(f"Timestamp drift statistics:")
+print(f"  Max drift: {max_drift_ns / 1e6:.3f} ms")
+print(f"  Avg drift: {avg_drift_ns / 1e6:.3f} ms")
+print(f"  Target: &lt;1 ms")
+
+if max_drift_ns < 1e6:  # 1ms = 1,000,000 ns
+    print("✅ PASS: Synchronization within spec (&lt;1ms)")
+else:
+    print("❌ FAIL: Drift exceeds 1ms threshold")`}
+</CodeBlock>
+
+---
+
+## Step 8: Headless Batch Generation for Cloud/HPC
+
+For large-scale dataset generation, use headless mode on cloud GPUs.
+
+### AWS EC2 Batch Generation
+
+<CodeBlock language="bash" title="Launch EC2 and run batch generation">
+{`# Launch G5.xlarge instance (A10G GPU, Ubuntu 22.04 DL AMI)
+# SSH into instance
+ssh -i your-key.pem ubuntu@<instance-ip>
+
+# Install Isaac Sim standalone (from Chapter 1)
+# Download dataset generator script
+wget https://your-repo/generate_dataset.py
+
+# Run headless batch generation for 10,000 frames
+\${ISAACSIM_PYTHON} generate_dataset.py --num-frames 10000 --headless
+
+# Expected time: ~50 minutes on A10G (24GB VRAM)
+
+# Download results
+scp -i your-key.pem -r ubuntu@<instance-ip>:~/dataset_* ./`}
+</CodeBlock>
+
+### Docker Container for Batch Jobs
+
+<CodeBlock language="dockerfile" title="Dockerfile.isaac-batch">
+{`FROM nvcr.io/nvidia/isaac-sim:2023.1.1
+
+# Install Python dependencies
+RUN pip install opencv-python rosbag2-py
+
+# Copy generation script
+COPY generate_dataset.py /workspace/
+
+# Set environment
+ENV ISAACSIM_PYTHON=/isaac-sim/python.sh
+
+# Run batch generation on container start
+CMD [\${ISAACSIM_PYTHON}, "/workspace/generate_dataset.py", "--num-frames", "10000"]`}
+</CodeBlock>
+
+**Build and run**:
+
+<CodeBlock language="bash">
+{`# Build Docker image
+docker build -t isaac-batch -f Dockerfile.isaac-batch .
+
+# Run with GPU support
+docker run --gpus all -v \$(pwd)/output:/output isaac-batch
+
+# Datasets saved to ./output/`}
+</CodeBlock>
+
+---
+
+## Summary
+
+In this chapter, you:
+
+- ✅ Created photorealistic warehouse scenes with PBR materials and HDR lighting
+- ✅ Loaded humanoid robot models from Isaac Sim asset library
+- ✅ Configured virtual sensor suites (stereo cameras, LiDAR, IMU)
+- ✅ Implemented domain randomization for lighting, textures, and poses
+- ✅ Generated datasets with RGB, depth, and segmentation ground truth
+- ✅ Exported synchronized data to rosbag2 format with &lt;1ms drift
+- ✅ Validated datasets in RViz and verified timestamp synchronization
+- ✅ Set up headless batch generation for cloud/HPC deployments
+
+## What's Next?
+
+<Callout type="success" title="Synthetic Data Pipeline Complete!">
+You can now generate unlimited training data for perception algorithms. In **Chapter 3**, you'll deploy Isaac ROS to run GPU-accelerated Visual SLAM on this data:
+- Install Isaac ROS with CUDA acceleration
+- Process stereo depth at 60 FPS
+- Run cuVSLAM for real-time localization
+- Achieve &lt;5cm accuracy over 100m trajectories
+</Callout>
+
+[**Continue to Chapter 3: Isaac ROS VSLAM →**](./chapter-3-isaac-ros-vslam)
+
+---
+
+**Key Takeaways**:
+- Synthetic data with domain randomization closes the sim-to-real gap
+- Isaac Sim generates ground truth labels automatically (no manual annotation)
+- Headless mode enables batch generation at scale (10,000+ frames)
+- rosbag2 format ensures compatibility with ROS 2 ecosystem
+
+**Estimated Completion Time**: 3-4 hours

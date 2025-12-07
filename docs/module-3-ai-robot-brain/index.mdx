@@ -1,0 +1,367 @@
+---
+id: module-3-intro
+title: "Module 3: The AI-Robot Brain (NVIDIA Isaac™)"
+sidebar_label: Introduction
+sidebar_position: 1
+description: Learn advanced AI perception and navigation using NVIDIA Isaac Sim, Isaac ROS, and Nav2 for bipedal humanoid robots
+keywords: [nvidia isaac, isaac sim, isaac ros, vslam, visual slam, nav2, bipedal navigation, synthetic data, gpu acceleration, ros2]
+---
+
+import Callout from '@site/src/components/Callout';
+import CodeBlock from '@site/src/components/CodeBlock';
+
+# Module 3: The AI-Robot Brain (NVIDIA Isaac™)
+
+<Callout type="info" title="Module Overview">
+Learn to build advanced AI perception and navigation systems using **NVIDIA Isaac Sim** for photorealistic simulation, **Isaac ROS** for GPU-accelerated Visual SLAM, and **Nav2** for bipedal humanoid path planning.
+</Callout>
+
+## What You'll Build
+
+In this module, you'll master the complete perception-to-navigation pipeline for humanoid robots:
+
+1. **Photorealistic Simulation**: Generate synthetic training data in Isaac Sim with domain randomization
+2. **GPU-Accelerated VSLAM**: Deploy real-time Visual SLAM achieving 60 FPS on edge hardware
+3. **Bipedal Path Planning**: Implement Nav2 with center-of-mass stability constraints
+4. **End-to-End Integration**: Connect simulation → perception → planning → control
+
+## Learning Objectives
+
+By the end of this module, you will be able to:
+
+- ✅ Set up NVIDIA Isaac Sim and generate photorealistic synthetic sensor data
+- ✅ Configure virtual sensor suites (stereo cameras, LiDAR, IMU) with realistic noise models
+- ✅ Implement domain randomization for lighting, textures, and object poses
+- ✅ Export synchronized datasets to rosbag2 format with ground truth annotations
+- ✅ Deploy Isaac ROS for GPU-accelerated stereo depth processing at 60 FPS
+- ✅ Configure and tune cuVSLAM or ORB-SLAM3 for real-time localization
+- ✅ Implement visual odometry fallback for robust tracking
+- ✅ Set up Nav2 with biped-specific constraints (ZMP stability, footstep planning)
+- ✅ Validate path safety using zero-moment-point criterion
+- ✅ Integrate the complete pipeline with &lt;100ms end-to-end latency
+
+## Hardware Requirements
+
+<Callout type="warning" title="GPU Requirements">
+This module requires an NVIDIA RTX GPU with CUDA support. Cloud alternatives are provided for users without local hardware.
+</Callout>
+
+### Minimum Configuration
+
+- **GPU**: NVIDIA RTX 3060 (12GB VRAM)
+- **CUDA**: 11.8 or later
+- **cuDNN**: 8.6 or later
+- **RAM**: 16GB system memory
+- **Storage**: 100GB for Isaac Sim + 500GB for datasets
+- **OS**: Ubuntu 20.04 or 22.04 (ROS 2 Humble support)
+
+### Recommended Configuration
+
+- **GPU**: NVIDIA RTX 4070 or higher
+- **RAM**: 32GB for large simulations
+- **Storage**: SSD for faster data loading
+
+### Cloud Deployment Options
+
+If you don't have local GPU access, you can use:
+
+- **AWS EC2 G5 instances** (NVIDIA A10G GPUs)
+- **Google Cloud** with T4/A100 GPUs
+- **Azure NC-series** with NVIDIA V100/A100
+
+All chapters include cloud deployment guides.
+
+## Prerequisites
+
+<Callout type="info" title="Required Prior Knowledge">
+You MUST complete the following modules before starting Module 3:
+</Callout>
+
+### Module 1: Robotic Nervous System (ROS 2 Foundations)
+
+You need to understand:
+- ROS 2 nodes, topics, and services
+- Launch files and parameter configuration
+- TF2 transforms and coordinate frames
+- Message types (sensor_msgs, geometry_msgs, nav_msgs)
+
+### Module 2: Digital Twin (Simulation Basics)
+
+You need familiarity with:
+- Robotics simulation concepts
+- Sensor models (cameras, LiDAR, IMU)
+- URDF robot descriptions
+- Gazebo basics (helpful but not required)
+
+### Additional Skills
+
+- **Python**: Intermediate level (Isaac Sim Python API)
+- **Linux**: Basic command line navigation
+- **Docker**: Helpful for Isaac ROS deployment (we'll teach this)
+
+## Technology Stack
+
+### NVIDIA Isaac Sim 2023.1.0+
+
+**Photorealistic robotics simulator** built on NVIDIA Omniverse:
+- PBR (Physically-Based Rendering) materials and HDR lighting
+- Real-time physics simulation (PhysX)
+- Virtual sensor suite with realistic noise models
+- Domain randomization for synthetic data generation
+- Headless rendering for batch processing
+
+### Isaac ROS (GPU-Accelerated Perception)
+
+**Hardware-accelerated ROS 2 packages** using NVIDIA Isaac GEMs:
+- **Stereo Depth**: SGM algorithm at 60 FPS (640×480)
+- **cuVSLAM**: GPU-accelerated Visual SLAM with loop closure
+- **Visual Odometry**: Fallback tracking for SLAM failures
+- **Integration**: Standard ROS 2 message types and TF2 transforms
+
+### Nav2 (Navigation Stack)
+
+**Production-grade navigation for ROS 2**:
+- **Global Planner**: A* for long-range path planning
+- **Local Planner**: DWB/TEB for trajectory optimization
+- **Costmaps**: Static obstacles, dynamic obstacles, inflation layers
+- **Biped Constraints**: Custom footprint, ZMP stability, turn radius limits
+
+### ROS 2 Humble
+
+**Middleware layer** connecting all components:
+- Topic-based pub/sub for sensor data and poses
+- Service calls for goal requests
+- Action servers for long-running navigation tasks
+- TF2 for transform management
+
+## Performance Targets
+
+This module teaches you to achieve these performance benchmarks:
+
+| Subsystem | Metric | Target | Hardware |
+|-----------|--------|--------|----------|
+| **Isaac Sim** | Rendering FPS | >30 FPS | RTX 3060 |
+| | Rendering FPS | >60 FPS | RTX 4070+ |
+| | Dataset Generation | 10,000 frames in &lt;2 hours | RTX 4090 |
+| **Isaac ROS** | Stereo Depth FPS | 60 FPS @ 640×480 | RTX 3060 |
+| | GPU Utilization | >80% | All RTX GPUs |
+| | CPU Usage | &lt;10% | Offloaded to GPU |
+| | End-to-End Latency | &lt;50ms | Camera → Pose |
+| **VSLAM** | Position Accuracy | &lt;5cm error | Over 100m |
+| | Orientation Accuracy | &lt;2° error | Over 100m |
+| | Pose Rate | 60 FPS | Real-time |
+| | Loop Closure | &lt;3 seconds | Detection time |
+| **Nav2** | Global Planning | &lt;2 seconds | 50m goals |
+| | Local Replanning | &lt;200ms | Dynamic obstacles |
+| | Path Stability | >95% | ZMP-stable paths |
+| | Success Rate | >90% | Valid goal reaching |
+| **Integration** | End-to-End Latency | &lt;100ms | Sensor → Command |
+
+## Module Structure
+
+This module consists of 5 comprehensive chapters:
+
+### Chapter 1: Isaac Sim Setup
+
+**Install and configure NVIDIA Isaac Sim** for synthetic data generation
+
+- Isaac Sim installation (standalone vs Omniverse)
+- CUDA and cuDNN setup and verification
+- First scene creation and rendering
+- Python API introduction
+- Performance benchmarking
+
+**Time Estimate**: 2-3 hours (including downloads)
+
+[Start Chapter 1 →](./chapter-1-isaac-sim-setup)
+
+---
+
+### Chapter 2: Synthetic Data Generation
+
+**Generate photorealistic training data** with domain randomization
+
+- Creating warehouse scenes with PBR materials
+- Configuring virtual sensor suites (stereo, RGB, depth, LiDAR, IMU)
+- Implementing domain randomization (lighting, textures, poses)
+- Exporting to rosbag2 with ground truth annotations
+- Headless batch generation for cloud/HPC
+
+**Time Estimate**: 3-4 hours
+
+[Start Chapter 2 →](./chapter-2-synthetic-data)
+
+---
+
+### Chapter 3: Isaac ROS VSLAM
+
+**Deploy GPU-accelerated Visual SLAM** for real-time localization
+
+- Isaac ROS installation (Docker and native)
+- Stereo depth processing at 60 FPS
+- cuVSLAM vs ORB-SLAM3 selection and configuration
+- Visual odometry fallback mechanisms
+- Performance tuning and diagnostic monitoring
+- 100m accuracy validation
+
+**Time Estimate**: 4-5 hours
+
+[Start Chapter 3 →](./chapter-3-isaac-ros-vslam)
+
+---
+
+### Chapter 4: Nav2 Bipedal Planning
+
+**Implement path planning** with center-of-mass stability constraints
+
+- Nav2 installation and configuration
+- Biped-specific footprint definition
+- Zero-moment-point (ZMP) stability validation
+- Global and local planner tuning
+- Costmap layer configuration
+- Footstep planning and visualization
+
+**Time Estimate**: 3-4 hours
+
+[Start Chapter 4 →](./chapter-4-nav2-planning)
+
+---
+
+### Chapter 5: End-to-End Integration
+
+**Connect the complete pipeline** from simulation to autonomous navigation
+
+- ROS 2 Bridge: Isaac Sim → ROS 2 Humble
+- Launch file integration for all components
+- Autonomous navigation demo (warehouse scene)
+- Health monitoring and diagnostics
+- Graceful degradation strategies
+- Cloud deployment guides (AWS, Google Cloud)
+
+**Time Estimate**: 4-5 hours
+
+[Start Chapter 5 →](./chapter-5-integration)
+
+---
+
+## What Makes This Module Unique
+
+### GPU Acceleration Throughout
+
+Unlike traditional CPU-based approaches, this module leverages NVIDIA GPUs at every stage:
+- **Isaac Sim**: Real-time ray tracing and physics (RTX cores)
+- **Stereo Depth**: GPU-accelerated SGM algorithm (CUDA cores)
+- **VSLAM**: cuVSLAM uses Tensor cores for feature matching
+- **Result**: 10-100x speedup over CPU implementations
+
+### Bipedal-Specific Navigation
+
+Most robotics tutorials focus on wheeled robots. We teach:
+- **Center-of-Mass (COM) stability** for two-legged locomotion
+- **Zero-Moment-Point (ZMP)** criterion for dynamic stability
+- **Footstep planning** with stability validation
+- **Step height/slope limits** for biped kinematics
+
+### Production-Ready Stack
+
+All technologies used are production-grade:
+- **Isaac Sim**: Used by Boston Dynamics, Agility Robotics, Figure AI
+- **Isaac ROS**: NVIDIA's official ROS 2 packages (actively maintained)
+- **Nav2**: Industry-standard navigation stack (deployed worldwide)
+
+### Sim-to-Real Transfer
+
+Skills learned transfer directly to physical robots:
+- Domain randomization techniques close the sim-to-real gap
+- Same Isaac ROS nodes run on Jetson AGX Orin edge hardware
+- Nav2 configurations work on real humanoids (with tuning)
+
+## Common Questions
+
+<details>
+<summary><strong>Can I complete this module without an RTX GPU?</strong></summary>
+
+Yes, with limitations:
+- **Cloud GPUs**: Use AWS G5 or Google Cloud instances (covered in all chapters)
+- **Pre-recorded demos**: All workflows have video walkthroughs
+- **Limitations**: Isaac Sim requires RTX for ray tracing (AMD/Intel GPUs not supported)
+
+</details>
+
+<details>
+<summary><strong>How much does cloud GPU time cost?</strong></summary>
+
+Approximate costs (as of 2025):
+- **AWS EC2 G5.xlarge** (A10G 24GB): ~$1.00/hour
+- **Google Cloud T4**: ~$0.35/hour (lower performance)
+- **Estimate**: $10-20 total for all chapters if using cloud efficiently
+
+</details>
+
+<details>
+<summary><strong>Will this work on Windows?</strong></summary>
+
+Partial support:
+- **Isaac Sim**: Yes, Windows 10/11 with RTX GPUs
+- **Isaac ROS**: No, Linux-only (Ubuntu 20.04/22.04 required)
+- **Recommendation**: Use WSL2 (Windows Subsystem for Linux) or dual-boot Ubuntu
+
+</details>
+
+<details>
+<summary><strong>Can I use this with a wheeled robot instead of bipedal?</strong></summary>
+
+Yes! The principles transfer:
+- Isaac Sim works with any robot (wheeled, tracked, aerial)
+- Isaac ROS VSLAM is robot-agnostic
+- Nav2 chapters focus on biped constraints, but you can simplify to circular/rectangular footprints for wheeled robots
+
+</details>
+
+<details>
+<summary><strong>Do I need a real humanoid robot?</strong></summary>
+
+No. This module is **simulation-focused**:
+- All work happens in Isaac Sim (virtual humanoid)
+- Skills prepare you for real hardware deployment (Module 4)
+- Physical robot hardware costs $50K-500K+ (not required here)
+
+</details>
+
+## Getting Help
+
+### Resources
+
+- **NVIDIA Isaac Sim Docs**: [docs.omniverse.nvidia.com/isaacsim](https://docs.omniverse.nvidia.com/isaacsim/latest/index.html)
+- **Isaac ROS Docs**: [nvidia-isaac-ros.github.io](https://nvidia-isaac-ros.github.io/)
+- **Nav2 Docs**: [navigation.ros.org](https://navigation.ros.org/)
+- **ROS 2 Humble Docs**: [docs.ros.org/en/humble](https://docs.ros.org/en/humble/)
+
+### Community
+
+- **ROS Discourse**: Ask questions at [discourse.ros.org](https://discourse.ros.org/)
+- **NVIDIA Forums**: Isaac Sim/ROS support at [forums.developer.nvidia.com](https://forums.developer.nvidia.com/)
+- **GitHub Issues**: Report documentation bugs
+
+## Ready to Start?
+
+<Callout type="success" title="Next Steps">
+Make sure you have:
+- ✅ Completed Module 1 (ROS 2 Foundations)
+- ✅ Completed Module 2 (Simulation Basics) - recommended
+- ✅ RTX GPU access (local or cloud)
+- ✅ Ubuntu 20.04/22.04 (or WSL2 on Windows)
+- ✅ 4-6 hours available for initial setup
+
+Then proceed to **Chapter 1: Isaac Sim Setup** to install NVIDIA Isaac Sim and verify your hardware.
+</Callout>
+
+[**Begin Chapter 1: Isaac Sim Setup →**](./chapter-1-isaac-sim-setup)
+
+---
+
+**Estimated Total Time**: 16-21 hours across 5 chapters
+
+**Difficulty**: Advanced (requires ROS 2 and Python experience)
+
+**Hardware**: NVIDIA RTX GPU required (cloud options available)

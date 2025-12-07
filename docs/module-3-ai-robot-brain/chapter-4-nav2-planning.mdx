@@ -1,0 +1,372 @@
+---
+id: chapter-4-nav2-planning
+title: "Chapter 4: Nav2 Bipedal Planning"
+sidebar_label: "Ch4: Nav2 Planning"
+sidebar_position: 5
+description: Implement path planning for bipedal humanoid robots with center-of-mass stability and ZMP validation
+keywords: [nav2, path planning, bipedal navigation, zmp, zero moment point, footstep planning, biped locomotion, stability]
+---
+
+import Callout from '@site/src/components/Callout';
+import CodeBlock from '@site/src/components/CodeBlock';
+
+# Chapter 4: Nav2 Bipedal Planning
+
+Implement **bipedal path planning** using Nav2 with center-of-mass stability constraints and zero-moment-point validation for humanoid robots.
+
+## Learning Objectives
+
+By the end of this chapter, you will:
+
+- ✅ Install and configure Nav2 for ROS 2 Humble
+- ✅ Define biped-specific robot footprint and kinematic constraints
+- ✅ Understand zero-moment-point (ZMP) stability criterion
+- ✅ Configure global and local planners for bipedal locomotion
+- ✅ Validate path stability (>95% ZMP-stable paths)
+- ✅ Implement dynamic replanning (&lt;200ms) for moving obstacles
+- ✅ Visualize footstep sequences and support polygons in RViz
+
+**Time Estimate**: 3-4 hours
+
+---
+
+## Why Bipedal Planning is Different
+
+### Wheeled Robots vs Bipedal Humanoids
+
+| Aspect | Wheeled Robots | Bipedal Humanoids |
+|--------|---------------|-------------------|
+| **Stability** | Always stable (4+ wheels) | Dynamically stable (COM must stay over feet) |
+| **Turning** | Rotate in place | Minimum turn radius (footstep constraints) |
+| **Terrain** | Flat surfaces only | Can handle steps/stairs (with planning) |
+| **Planning** | Simple 2D footprint | 3D footstep planning + COM trajectory |
+
+<Callout type="warning" title="Zero-Moment-Point (ZMP) Criterion">
+**ZMP** is the point on the ground where the sum of gravitational and inertial forces equals zero. For stable bipedal walking:
+
+- ZMP must remain **inside the support polygon** (area between feet)
+- If ZMP moves outside, robot will tip over
+- Nav2 paths must respect this constraint
+</Callout>
+
+---
+
+## Step 1: Install Nav2
+
+<CodeBlock language="bash" title="Install Nav2 for ROS 2 Humble">
+{`# Install Nav2 meta-package
+sudo apt update
+sudo apt install -y ros-humble-navigation2 ros-humble-nav2-bringup
+
+# Install Nav2 dependencies
+sudo apt install -y ros-humble-slam-toolbox ros-humble-turtlebot3-gazebo
+
+# Source ROS 2
+source /opt/ros/humble/setup.bash
+
+# Verify installation
+ros2 pkg list | grep nav2
+# Should list ~20 nav2 packages`}
+</CodeBlock>
+
+---
+
+## Step 2: Configure Biped Footprint
+
+### Define Robot Footprint
+
+<CodeBlock language="yaml" title="biped_footprint.yaml">
+{`amcl:
+  ros__parameters:
+    robot_model_type: "nav2_footprint_collision_checker"
+
+controller_server:
+  ros__parameters:
+    # Biped footprint: rectangular (30cm x 20cm)
+    footprint: "[[0.15, 0.10], [0.15, -0.10], [-0.15, -0.10], [-0.15, 0.10]]"
+
+    # Kinematic constraints for bipedal locomotion
+    FollowPath:
+      plugin: "dwb_core::DWBLocalPlanner"
+      max_vel_x: 0.5  # 0.5 m/s max forward speed (conservative)
+      min_vel_x: -0.1  # Small backward capability
+      max_vel_y: 0.0  # No lateral motion (bipeds can't strafe)
+      max_vel_theta: 0.5  # 0.5 rad/s max rotation (turn radius >50cm)
+      min_vel_theta: -0.5
+
+      # Acceleration limits (smooth COM trajectory)
+      acc_lim_x: 0.5  # 0.5 m/s² acceleration
+      acc_lim_y: 0.0
+      acc_lim_theta: 1.0
+
+      # Step constraints
+      max_step_height: 0.15  # Max 15cm step
+      max_slope: 0.3  # Max 30% grade (~17°)
+
+planner_server:
+  ros__parameters:
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      tolerance: 0.2  # 20cm goal tolerance
+      use_astar: true  # A* for global planning`}
+</CodeBlock>
+
+---
+
+## Step 3: Implement ZMP Validation
+
+### ZMP Stability Check Script
+
+<CodeBlock language="python" title="zmp_validator.py">
+{`#!/usr/bin/env python3
+import numpy as np
+
+class ZMPValidator:
+    def __init__(self, foot_length=0.30, foot_width=0.20):
+        """
+        foot_length: Length of foot in meters (30cm typical)
+        foot_width: Width of foot in meters (20cm typical)
+        """
+        self.foot_length = foot_length
+        self.foot_width = foot_width
+
+    def compute_support_polygon(self, left_foot_pose, right_foot_pose):
+        """
+        Compute support polygon from two foot poses.
+        Returns: 4 corner points of polygon
+        """
+        # Simplified: assume feet are parallel and at same height
+        # In production, use full 3D foot transforms
+
+        # Support polygon is union of both feet
+        polygon = [
+            [left_foot_pose[0] - self.foot_length/2, left_foot_pose[1] - self.foot_width/2],
+            [left_foot_pose[0] + self.foot_length/2, left_foot_pose[1] - self.foot_width/2],
+            [right_foot_pose[0] + self.foot_length/2, right_foot_pose[1] + self.foot_width/2],
+            [right_foot_pose[0] - self.foot_length/2, right_foot_pose[1] + self.foot_width/2],
+        ]
+        return np.array(polygon)
+
+    def is_zmp_stable(self, com_position, left_foot_pose, right_foot_pose):
+        """
+        Check if COM position results in ZMP inside support polygon.
+        com_position: [x, y] center of mass position
+        Returns: True if stable, False if unstable
+        """
+        polygon = self.compute_support_polygon(left_foot_pose, right_foot_pose)
+
+        # Point-in-polygon test (ray casting algorithm)
+        x, y = com_position[0], com_position[1]
+        n = len(polygon)
+        inside = False
+
+        p1x, p1y = polygon[0]
+        for i in range(1, n + 1):
+            p2x, p2y = polygon[i % n]
+            if y > min(p1y, p2y):
+                if y <= max(p1y, p2y):
+                    if x <= max(p1x, p2x):
+                        if p1y != p2y:
+                            xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                        if p1x == p2x or x <= xinters:
+                            inside = not inside
+            p1x, p1y = p2x, p2y
+
+        return inside
+
+# Example usage
+validator = ZMPValidator(foot_length=0.30, foot_width=0.20)
+
+# Foot poses: [x, y] positions
+left_foot = [-0.05, 0.10]  # 10cm left of center
+right_foot = [-0.05, -0.10]  # 10cm right of center
+
+# COM position during walk cycle
+com = [0.0, 0.0]  # Centered between feet
+
+is_stable = validator.is_zmp_stable(com, left_foot, right_foot)
+print(f"Stability: {'✅ STABLE' if is_stable else '❌ UNSTABLE'}")
+
+# Test unstable case
+com_unstable = [0.5, 0.5]  # COM way outside support polygon
+is_stable_2 = validator.is_zmp_stable(com_unstable, left_foot, right_foot)
+print(f"Unstable COM: {'✅ STABLE' if is_stable_2 else '❌ UNSTABLE (expected)'}")`}
+</CodeBlock>
+
+---
+
+## Step 4: Configure Global and Local Planners
+
+### Global Planner (A* for Long-Range)
+
+<CodeBlock language="yaml" title="global_planner.yaml">
+{`planner_server:
+  ros__parameters:
+    expected_planner_frequency: 1.0  # Replan every 1 second
+    planner_plugins: ["GridBased"]
+
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      tolerance: 0.2  # Goal tolerance (20cm)
+      use_astar: true  # A* algorithm (faster than Dijkstra)
+      allow_unknown: false  # Don't plan through unknown space
+      use_final_approach_orientation: false  # Ignore goal orientation
+
+      # Cost penalties
+      cost_travel_multiplier: 2.0  # Prefer shorter paths`}
+</CodeBlock>
+
+### Local Planner (DWB for Biped Constraints)
+
+<CodeBlock language="yaml" title="local_planner.yaml">
+{`controller_server:
+  ros__parameters:
+    controller_frequency: 20.0  # 20 Hz control loop
+    controller_plugins: ["FollowPath"]
+
+    FollowPath:
+      plugin: "dwb_core::DWBLocalPlanner"
+
+      # Trajectory sampling
+      vx_samples: 20  # Sample 20 forward velocities
+      vtheta_samples: 40  # Sample 40 rotation rates
+      sim_time: 2.0  # Simulate 2 seconds ahead
+
+      # Critics (cost functions)
+      critics: [
+        "RotateToGoal",
+        "Oscillation",
+        "BaseObstacle",
+        "GoalAlign",
+        "PathAlign",
+        "PathDist",
+        "GoalDist"
+      ]
+
+      # Biped-specific: penalize oscillation heavily
+      Oscillation.scale: 10.0
+
+      # Path following
+      PathAlign.scale: 32.0  # High weight for staying on path
+      PathDist.scale: 32.0
+
+      # Obstacle avoidance
+      BaseObstacle.scale: 0.02
+      BaseObstacle.sum_scores: false`}
+</CodeBlock>
+
+---
+
+## Step 5: Costmap Configuration
+
+<CodeBlock language="yaml" title="costmap_common.yaml">
+{`obstacle_layer:
+  plugin: "nav2_costmap_2d::ObstacleLayer"
+  enabled: true
+  observation_sources: scan lidar
+  scan:
+    topic: /scan
+    max_obstacle_height: 2.0
+    clearing: true
+    marking: true
+  lidar:
+    topic: /lidar_points
+    max_obstacle_height: 2.5
+    clearing: true
+    marking: true
+
+inflation_layer:
+  plugin: "nav2_costmap_2d::InflationLayer"
+  enabled: true
+  inflation_radius: 0.55  # 55cm inflation (safety margin >40cm)
+  cost_scaling_factor: 3.0
+
+static_layer:
+  plugin: "nav2_costmap_2d::StaticLayer"
+  map_subscribe_transient_local: true`}
+</CodeBlock>
+
+---
+
+## Step 6: Launch Nav2 with Biped Configuration
+
+<CodeBlock language="python" title="biped_nav2.launch.py">
+{`from launch import LaunchDescription
+from launch_ros.actions import Node
+from ament_index_python.packages import get_package_share_directory
+import os
+
+def generate_launch_description():
+    config_dir = os.path.join(get_package_share_directory('biped_nav'), 'config')
+
+    return LaunchDescription([
+        Node(
+            package='nav2_planner',
+            executable='planner_server',
+            name='planner_server',
+            parameters=[os.path.join(config_dir, 'global_planner.yaml')]
+        ),
+        Node(
+            package='nav2_controller',
+            executable='controller_server',
+            name='controller_server',
+            parameters=[os.path.join(config_dir, 'local_planner.yaml')]
+        ),
+        Node(
+            package='nav2_bt_navigator',
+            executable='bt_navigator',
+            name='bt_navigator',
+            parameters=[os.path.join(config_dir, 'bt_navigator.yaml')]
+        ),
+        Node(
+            package='nav2_lifecycle_manager',
+            executable='lifecycle_manager',
+            name='lifecycle_manager_navigation',
+            parameters=[{'autostart': True, 'node_names': [
+                'planner_server',
+                'controller_server',
+                'bt_navigator'
+            ]}]
+        )
+    ])`}
+</CodeBlock>
+
+<CodeBlock language="bash" title="Launch Nav2">
+{`# Launch biped navigation stack
+ros2 launch biped_nav biped_nav2.launch.py
+
+# In another terminal, send navigation goal
+ros2 topic pub /goal_pose geometry_msgs/PoseStamped \\
+  "{header: {frame_id: 'map'}, pose: {position: {x: 5.0, y: 0.0, z: 0.0}, orientation: {w: 1.0}}}"
+
+# Monitor in RViz
+rviz2`}
+</CodeBlock>
+
+---
+
+## Summary
+
+In this chapter, you:
+
+- ✅ Installed and configured Nav2 for ROS 2 Humble
+- ✅ Defined biped-specific footprint (30cm × 20cm) and kinematic constraints
+- ✅ Implemented ZMP stability validation for COM trajectory
+- ✅ Configured A* global planner and DWB local planner for bipedal locomotion
+- ✅ Set up costmap layers with 55cm safety inflation
+- ✅ Launched Nav2 stack with biped-specific parameters
+
+## What's Next?
+
+<Callout type="success" title="Planning Working!">
+You now have Nav2 configured for bipedal humanoid navigation with stability constraints. In **Chapter 5**, you'll integrate everything:
+- Connect Isaac Sim → Isaac ROS VSLAM → Nav2 → Locomotion Controller
+- Run end-to-end autonomous navigation in simulation
+- Achieve &lt;100ms latency and >90% success rate
+</Callout>
+
+[**Continue to Chapter 5: End-to-End Integration →**](./chapter-5-integration)
+
+---
+
+**Estimated Completion Time**: 3-4 hours

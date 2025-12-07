@@ -1,0 +1,54 @@
+/* InteractiveDiagram Component Styles */
+
+.diagramContainer {
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.mermaidDiagram {
+  background: var(--ifm-background-surface-color);
+  padding: 2rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  overflow-x: auto;
+}
+
+.svgDiagram {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  background: var(--ifm-background-surface-color);
+  border-radius: 8px;
+  border: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.svgImage {
+  max-width: 100%;
+  height: auto;
+}
+
+.caption {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  color: var(--ifm-color-emphasis-700);
+  font-style: italic;
+}
+
+.error {
+  padding: 2rem;
+  background: rgba(211, 47, 47, 0.1);
+  border: 2px solid #d32f2f;
+  border-radius: 4px;
+  color: #d32f2f;
+}
+
+@media (max-width: 768px) {
+  .mermaidDiagram,
+  .svgDiagram {
+    padding: 1rem 0.5rem;
+  }
+
+  .caption {
+    font-size: 0.8rem;
+  }
+}
