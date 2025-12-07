@@ -1,0 +1,90 @@
+---
+sidebar_position: 2
+title: Nodes, Topics, and Services
+---
+
+# Nodes, Topics, and Services
+
+This chapter dives into the fundamental building blocks of any ROS 2 application: nodes, topics, and services. Understanding these concepts is essential for designing and implementing distributed robotics software.
+
+## ROS 2 Nodes
+
+In ROS 2, a **node** is an executable process that performs computation. Nodes are typically small, modular programs designed to do one thing well. For example, one node might control a motor, another might process camera data, and a third might estimate the robot's position.
+
+### Why Nodes?
+
+*   **Modularity**: Breaking down a complex system into smaller, manageable nodes simplifies development and debugging.
+*   **Reusability**: Nodes can be reused across different robot platforms or applications.
+*   **Fault Isolation**: If one node crashes, it doesn't necessarily bring down the entire system.
+*   **Distribution**: Nodes can run on different machines (e.g., a robot's embedded computer, a workstation, or even a cloud server), communicating over the ROS 2 middleware.
+
+## ROS 2 Topics
+
+**Topics** are the primary means of asynchronous, many-to-many communication in ROS 2. As discussed in the previous chapter on middleware, topics implement the publish/subscribe messaging pattern.
+
+*   **Publishers** send messages to a topic.
+*   **Subscribers** receive messages from a topic.
+
+### Characteristics of Topics:
+
+*   **Asynchronous**: Publishers don't wait for subscribers to receive messages.
+*   **Message Types**: Each topic has a specific message type (e.g., `sensor_msgs/msg/LaserScan`, `std_msgs/msg/String`). This ensures data consistency.
+*   **One-to-many / Many-to-one**: A single publisher can send to multiple subscribers, and multiple publishers can send to a single subscriber.
+
+### Example: Lidar Data
+
+A robot's lidar sensor might publish `sensor_msgs/msg/LaserScan` messages on the `/scan` topic. A navigation node and a visualization node could both subscribe to `/scan` to get real-time lidar data.
+
+```bash
+# List active topics
+ros2 topic list
+
+# Echo messages on a topic
+ros2 topic echo /scan
+
+# Get information about a topic
+ros2 topic info /scan
+```
+
+## ROS 2 Services
+
+**Services** provide a synchronous, request/response communication mechanism between nodes. Unlike topics, which are fire-and-forget, services are used when a node needs to explicitly request a computation from another node and wait for a response.
+
+### Characteristics of Services:
+
+*   **Synchronous**: The client node sends a request and blocks until it receives a response from the server node.
+*   **Request/Response**: A client sends a single request message, and the server sends back a single response message.
+*   **One-to-one**: Typically, a service has one client making a request to one server providing the response.
+
+### Example: Inverse Kinematics Calculation
+
+Imagine a robotic arm. A motion planning node might request an inverse kinematics (IK) calculation from an IK solver node. The motion planning node sends the desired end-effector pose, and the IK solver node computes and returns the joint angles required to achieve that pose.
+
+```bash
+# List active services
+ros2 service list
+
+# Call a service (example for a hypothetical service)
+ros2 service call /my_robot/set_joint_angles example_interfaces/srv/SetJointAngles "{joint_name: 'joint1', angle: 0.5}"
+
+# Get information about a service
+ros2 service info /my_robot/set_joint_angles
+```
+
+## Interacting with Nodes, Topics, and Services
+
+ROS 2 provides command-line tools to inspect and interact with the communication graph:
+
+*   `ros2 node list`: Lists all active nodes.
+*   `ros2 topic list`: Lists all active topics.
+*   `ros2 topic echo <topic_name>`: Displays messages being published on a topic.
+*   `ros2 topic info <topic_name>`: Shows information about a topic, including its type and connected publishers/subscribers.
+*   `ros2 service list`: Lists all active services.
+*   `ros2 service call <service_name> <service_type> <arguments>`: Calls a service with specified arguments.
+*   `ros2 service info <service_name>`: Shows information about a service, including its type.
+
+## Conclusion
+
+Nodes, topics, and services are the core components that enable distributed and modular robotics applications in ROS 2. Topics are ideal for continuous data streams and asynchronous communication, while services are used for explicit request/response interactions. Mastering these concepts is crucial for building complex and reliable robotic systems.
+
+In the next chapter, we will explore `rclpy`, the Python client library for ROS 2, and learn how to implement nodes, publishers, subscribers, and service clients/servers in Python.
