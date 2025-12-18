@@ -3,6 +3,7 @@ uvicorn
 pydantic
 python-dotenv
 openai
+openai-agents
 qdrant-client
 cohere
 requests
