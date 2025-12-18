@@ -4,7 +4,7 @@ import json
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from agent import Agent, Runner, OpenAIChatCompletionsModel
+from agents import Agent, Runner, OpenAIChatCompletionsModel
 from qdrant_client import QdrantClient
 import cohere
 from dotenv import load_dotenv

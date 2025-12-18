@@ -3,8 +3,8 @@
 import os
 from dotenv import load_dotenv
 
-from agent import Agent, Runner, OpenAIChatCompletionsModel, AsyncOpenAI
-from agent import set_tracing_disabled, function_tool
+from agents import Agent, Runner, OpenAIChatCompletionsModel, AsyncOpenAI
+from agents import set_tracing_disabled, function_tool
 
 import cohere
 from qdrant_client import QdrantClient
