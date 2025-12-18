@@ -12,7 +12,7 @@ export default function BookChatWidget() {
     const userMsg = { role: "user", content: input };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
-    setLoading(true);
+    setLoading(true);   
 
     // Add placeholder for assistant response
     setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
