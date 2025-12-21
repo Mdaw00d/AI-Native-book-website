@@ -16,7 +16,7 @@ load_dotenv()
 # -------------------------------------
 # CONFIG from .env
 # -------------------------------------
-SITEMAP_URL = os.getenv("SITEMAP_URL", "https://padh-book.vercel.app/sitemap.xml")
+SITEMAP_URL = os.getenv("SITEMAP_URL", "https://ai-native-book-website.vercel.app/sitemap.xml")
 COLLECTION_NAME = os.getenv("QDRANT_COLLECTION", "padh_book")
 
 COHERE_API_KEY = os.getenv("COHERE_API_KEY")

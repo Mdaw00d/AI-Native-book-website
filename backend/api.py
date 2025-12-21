@@ -17,7 +17,7 @@ app = FastAPI(title="PADH Book RAG Chatbot")
 # CORS setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://padh-book.vercel.app"],
+    allow_origins=["http://localhost:3000", "https://ai-native-book-website.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

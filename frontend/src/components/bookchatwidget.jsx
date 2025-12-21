@@ -18,7 +18,7 @@ export default function BookChatWidget() {
     setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
     try {
-      const response = await fetch("https://padh-book.onrender.com/chat", {
+      const response = await fetch("https://ai-native-book-website.onrender.com", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input }),
