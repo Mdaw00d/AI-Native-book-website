@@ -19,7 +19,7 @@ load_dotenv()
 SITEMAP_URL = os.getenv("SITEMAP_URL", "https://ai-native-book-website.vercel.app/sitemap.xml")
 COLLECTION_NAME = os.getenv("QDRANT_COLLECTION", "padh_book")
 
-COHERE_API_KEY = os.getenv("COHERE_API_KEY")
+COHERE_API_KEY = os.getenv("COHERE_API_KEY", "").strip()
 if not COHERE_API_KEY:
     raise ValueError("COHERE_API_KEY missing")
 

@@ -16,7 +16,7 @@ load_dotenv()
 # -------------------------------------
 COLLECTION_NAME = os.getenv("QDRANT_COLLECTION", "padh_book")
 
-COHERE_API_KEY = os.getenv("COHERE_API_KEY")
+COHERE_API_KEY = os.getenv("COHERE_API_KEY", "").strip()
 if not COHERE_API_KEY:
     raise ValueError("COHERE_API_KEY missing")
 cohere_client = cohere.Client(COHERE_API_KEY)

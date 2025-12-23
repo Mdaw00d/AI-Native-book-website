@@ -6,7 +6,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Initialize Cohere client from environment
-cohere_client = cohere.Client(os.getenv("COHERE_API_KEY"))
+cohere_api_key = os.getenv("COHERE_API_KEY", "").strip()
+if not cohere_api_key:
+    raise ValueError("COHERE_API_KEY not found in environment")
+cohere_client = cohere.Client(cohere_api_key)
 
 # Connect to Qdrant from environment
 qdrant = QdrantClient(

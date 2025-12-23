@@ -24,7 +24,10 @@ app.add_middleware(
 )
 
 # Clients
-cohere_client = cohere.Client(os.getenv("COHERE_API_KEY"))
+cohere_api_key = os.getenv("COHERE_API_KEY", "").strip()
+if not cohere_api_key:
+    raise ValueError("COHERE_API_KEY not found in environment")
+cohere_client = cohere.Client(cohere_api_key)
 qdrant = QdrantClient(url=os.getenv("QDRANT_URL"), api_key=os.getenv("QDRANT_API_KEY"))
 collection_name = os.getenv("QDRANT_COLLECTION", "padh_book")
 
@@ -96,7 +99,13 @@ async def chat(request: ChatRequest):
     try:
         context, sources = retrieve_context(user_message)
     except Exception as e:
-        return StreamingResponse(iter([f"Retrieval error: {str(e)}"]), media_type="text/plain")
+        error_msg = str(e)
+        # Handle Cohere rate limit errors specifically
+        if "429" in error_msg or "rate limit" in error_msg.lower():
+            error_msg = "⚠️ Rate limit reached. Please wait a moment and try again."
+        else:
+            error_msg = f"Retrieval error: {error_msg[:200]}"  # Truncate long errors
+        return StreamingResponse(iter([error_msg]), media_type="text/plain")
 
     full_prompt = f"""
 Context from the book:
