@@ -88,7 +88,13 @@ def chunk_text(text, max_chars=1200):
 
 def embed(text):
     res = cohere_client.embed(model=EMBED_MODEL, input_type="search_document", texts=[text])
-    return res.embeddings[0]
+    vector = res.embeddings[0]
+
+    # Check vector dimensions before storing to Qdrant
+    if len(vector) != 1024:
+        print(f"Warning: Ingestion: Vector dimension mismatch: expected 1024, got {len(vector)}")
+
+    return vector
 
 
 def recreate_collection():

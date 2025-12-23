@@ -30,21 +30,32 @@ collection_name = os.getenv("QDRANT_COLLECTION", "padh_book")
 
 # Embedding function
 def embed_query(text: str):
-    res = cohere_client.embed(model="embed-english-v3.0", input_type="search_query", texts=[text])
+    res = cohere_client.embed(
+        model="embed-english-v3.0",
+        input_type="search_query",
+        texts=[text]
+    )
     return res.embeddings[0]
 
 # Retrieval function
 def retrieve_context(query: str, top_k: int = 5):
     vector = embed_query(query)
-    
-    # Use query_points to avoid attribute errors
+
+    # Check vector dimensions before sending to Qdrant
+    if len(vector) != 1024:
+        print(f"Warning: Vector dimension mismatch: expected 1024, got {len(vector)}")
+        # For now, we'll try to continue but this indicates a configuration issue
+        # In production, you might want to handle this differently
+        pass
+
+    # Use query_points with proper format to avoid dimension errors
     results_obj = qdrant.query_points(
         collection_name=collection_name,
         query=vector,
         limit=top_k,
         with_payload=True,
     )
-    
+
     results = results_obj.points
     contexts = [hit.payload["text"] for hit in results]
     sources = [hit.payload["url"] for hit in results]

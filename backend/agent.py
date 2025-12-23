@@ -41,13 +41,24 @@ def get_embedding(text):
         input_type="search_query",
         texts=[text]
     )
-    return res.embeddings[0]
+    vector = res.embeddings[0]
+
+    # Check vector dimensions before sending to Qdrant
+    if len(vector) != 1024:
+        print(f"Warning: Vector dimension mismatch: expected 1024, got {len(vector)}")
+
+    return vector
 
 
 @function_tool
 def retrieve(query: str) -> str:
     """Retrieve relevant sections from the Physical AI & Humanoid Robotics book."""
     embedding = get_embedding(query)
+
+    # Check vector dimensions before sending to Qdrant
+    if len(embedding) != 1024:
+        print(f"Warning: Vector dimension mismatch: expected 1024, got {len(embedding)}")
+
     results = qdrant.search(
         collection_name=COLLECTION_NAME,
         query_vector=embedding,

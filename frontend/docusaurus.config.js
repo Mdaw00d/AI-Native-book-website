@@ -3,10 +3,10 @@
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  url: "https://padh-book.vercel.app",
+  url: "https://ai-native-book-website.vercel.app",
   baseUrl: "/",
 
-  organizationName: "maryumxx", // optional, can keep
+  organizationName: "mdaw00ds", // optional, can keep
   projectName: "Physical-AI-Humanoids-Robotic-Textbook", // optional, can keep
 
   deploymentBranch: undefined, // or remove this line

@@ -1,13 +1,17 @@
 import cohere
 from qdrant_client import QdrantClient
+import os
+from dotenv import load_dotenv
 
-# Initialize Cohere client
-cohere_client = cohere.Client("bXrT78FpGbymgWxMwCN92nuaGkDbWVXRi5rwEDeo")
+load_dotenv()
 
-# Connect to Qdrant
+# Initialize Cohere client from environment
+cohere_client = cohere.Client(os.getenv("COHERE_API_KEY"))
+
+# Connect to Qdrant from environment
 qdrant = QdrantClient(
-    url="https://56707107-2e68-459d-a7e9-3733be6a8a17.europe-west3-0.gcp.cloud.qdrant.io",
-    api_key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.lK2J8SHa4r4pyy_rfGnlikJyGYVkPHHta8Y68n6LyoU"
+    url=os.getenv("QDRANT_URL"),
+    api_key=os.getenv("QDRANT_API_KEY")
 )
 
 def get_embedding(text):
@@ -21,6 +25,11 @@ def get_embedding(text):
 
 def retrieve(query):
     embedding = get_embedding(query)
+
+    # Check vector dimensions before sending to Qdrant
+    if len(embedding) != 1024:
+        print(f"Warning: Vector dimension mismatch: expected 1024, got {len(embedding)}")
+
     result = qdrant.query_points(
         collection_name="padh_book",
         query=embedding,
