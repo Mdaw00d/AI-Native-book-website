@@ -13,15 +13,16 @@ const Card = React.forwardRef(({ className, ...props }, ref) => (
       'relative rounded-xl overflow-hidden',
       'bg-white/80 dark:bg-gray-900/80',
       'backdrop-blur-lg',
-      'border border-white/30 dark:border-white/10',
+      'border border-[#00D9FF]/20 dark:border-[#00D9FF]/15',
       'shadow-lg hover:shadow-2xl',
       'transition-all duration-300',
-      'hover:scale-[1.02] hover:border-white/50',
+      'hover:scale-[1.02] hover:border-[#00D9FF]/40',
       'text-gray-900 dark:text-gray-100',
       'before:absolute before:inset-0 before:rounded-xl',
-      'before:bg-gradient-to-br before:from-[#7befff]/10 before:via-[#9c5ffc]/10 before:to-[#d49bc9]/10',
+      'before:bg-gradient-to-br before:from-[#0077FF]/10 before:via-[#00D9FF]/10 before:to-[#00C9A7]/10',
       'before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300',
       'before:pointer-events-none',
+      'hover:shadow-[0_0_30px_rgba(0,217,255,0.2)]',
       className
     )}
     {...props}
@@ -43,9 +44,9 @@ const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
     ref={ref}
     className={clsx(
       'text-2xl font-bold leading-none tracking-tight',
-      'bg-gradient-to-r from-[#7befff] via-[#9c5ffc] to-[#d49bc9]',
+      'bg-gradient-to-r from-[#0077FF] via-[#00D9FF] to-[#00C9A7]',
       'bg-clip-text text-transparent',
-      'dark:from-[#7befff] dark:via-[#9c5ffc] dark:to-[#ffcda8]',
+      'dark:from-[#00D9FF] dark:via-[#7FD8FF] dark:to-[#00C9A7]',
       className
     )}
     {...props}

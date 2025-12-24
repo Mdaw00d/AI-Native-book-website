@@ -29,6 +29,14 @@ module.exports = {
           800: '#262626',
           900: '#171717',
         },
+        tech: {
+          blue: '#0077FF',
+          cyan: '#00D9FF',
+          teal: '#00C9A7',
+          'light-cyan': '#7FD8FF',
+          dark: '#0A192F',
+          grid: '#2E6FF2',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
@@ -60,7 +68,9 @@ module.exports = {
       boxShadow: {
         'subtle': '0 1px 3px rgba(0, 0, 0, 0.03)',
         'hover': '0 4px 12px rgba(0, 0, 0, 0.06)',
-        'focus': '0 0 0 3px rgba(115, 115, 115, 0.1)',
+        'focus': '0 0 0 3px rgba(0, 217, 255, 0.15), 0 0 20px rgba(0, 119, 255, 0.1)',
+        'tech-glow': '0 0 20px rgba(0, 217, 255, 0.3)',
+        'tech-glow-lg': '0 0 30px rgba(0, 217, 255, 0.4)',
       },
     },
   },

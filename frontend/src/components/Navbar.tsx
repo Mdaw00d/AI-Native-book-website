@@ -13,18 +13,13 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="bg-gradient-to-r from-[#7befff] via-[#9c5ffc] to-[#d49bc9] dark:from-[#9c5ffc] dark:via-[#7befff] dark:to-[#ffcda8] sticky top-0 z-50 backdrop-blur-md bg-opacity-90 shadow-lg border-b border-white/20">
+    <nav className="bg-gradient-to-r from-[#0077FF] via-[#00D9FF] to-[#00C9A7] dark:from-[#0A192F] dark:via-[#0077FF] dark:to-[#00D9FF] sticky top-0 z-50 backdrop-blur-md bg-opacity-90 shadow-lg shadow-[0_0_20px_rgba(0,217,255,0.3)] border-b border-[#00D9FF]/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo and Brand */}
+          {/* Brand */}
           <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-3 no-underline hover:no-underline">
-              <img
-                src="/img/logo.jpg"
-                alt="Physical AI Logo"
-                className="w-10 h-10 rounded-lg object-cover shadow-lg ring-2 ring-white/30"
-              />
-              <span className="text-xl font-semibold text-pretty text-white drop-shadow-lg hidden sm:block">
+            <Link to="/" className="flex items-center no-underline hover:no-underline">
+              <span className="text-xl font-semibold text-pretty text-white drop-shadow-lg">
                 Humanoid Robotics Ebook
               </span>
             </Link>

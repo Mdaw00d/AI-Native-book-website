@@ -9,21 +9,26 @@ import FeatureIcon from '@site/src/components/FeatureIcon';
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
   return (
-    <header className="relative bg-gradient-to-br from-[#7befff] via-[#9c5ffc] to-[#d49bc9] dark:from-[#9c5ffc] dark:via-[#d49bc9] dark:to-[#ffcda8] text-white py-20 overflow-hidden">
-      {/* Glassmorphism overlay */}
+    <header className="relative bg-gradient-to-br from-[#0077FF] via-[#00D9FF] to-[#00C9A7] dark:from-[#0A192F] dark:via-[#0077FF] dark:to-[#00D9FF] text-white py-20 overflow-hidden">
+      {/* Glassmorphism overlay with tech glow */}
       <div className="absolute inset-0 backdrop-blur-sm bg-white/5"></div>
+      {/* Tech grid pattern overlay */}
+      <div className="absolute inset-0 opacity-10" style={{
+        backgroundImage: 'linear-gradient(rgba(0, 217, 255, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 217, 255, 0.3) 1px, transparent 1px)',
+        backgroundSize: '40px 40px'
+      }}></div>
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h1 className="text-5xl font-bold mb-4 drop-shadow-2xl">{siteConfig.title}</h1>
+          <h1 className="text-5xl font-bold mb-4 drop-shadow-2xl" style={{textShadow: '0 0 30px rgba(0, 217, 255, 0.5)'}}>{siteConfig.title}</h1>
           <p className="text-xl mb-8 text-white/90 drop-shadow-lg">{siteConfig.tagline}</p>
           <div className="flex gap-4 justify-center">
             <Link to="/docs/intro">
-              <Button size="lg" className="bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <Button size="lg" className="bg-white/20 backdrop-blur-md border-[#00D9FF]/30 text-white hover:bg-white/30 shadow-[0_0_20px_rgba(0,217,255,0.3)] hover:shadow-[0_0_30px_rgba(0,217,255,0.5)] transition-all duration-300 hover:scale-105">
                 Get Started
               </Button>
             </Link>
             <Link to="/about">
-              <Button variant="outline" size="lg" className="border-white/40 bg-white/10 backdrop-blur-md text-white hover:bg-white/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <Button variant="outline" size="lg" className="border-white/40 bg-white/10 backdrop-blur-md text-white hover:bg-white/20 shadow-[0_0_15px_rgba(0,119,255,0.2)] hover:shadow-[0_0_25px_rgba(0,217,255,0.4)] transition-all duration-300 hover:scale-105">
                 Learn More
               </Button>
             </Link>
@@ -38,7 +43,7 @@ function PhysicalAIIntro() {
   return (
     <section className="py-16 px-4">
       <div className="container mx-auto max-w-4xl">
-        <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-white">What is Physical AI?</h2>
+        <h2 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-[#0077FF] via-[#00D9FF] to-[#00C9A7] bg-clip-text text-transparent dark:from-[#00D9FF] dark:via-[#7FD8FF] dark:to-[#00C9A7]">What is Physical AI?</h2>
         <p className="text-lg text-center mb-6 text-gray-700 dark:text-gray-300">
           Physical AI represents the convergence of artificial intelligence with the physical world.
           It's where robots don't just compute—they perceive, reason, and act in real environments.
@@ -116,9 +121,14 @@ function ModuleOverview() {
   ];
 
   return (
-    <section className="py-16 px-4 bg-gray-50 dark:bg-gray-900" style={{ marginTop: '2rem', marginBottom: '2rem' }}>
-      <div className="container mx-auto max-w-6xl">
-        <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">Available Modules</h2>
+    <section className="py-16 px-4 bg-gray-50 dark:bg-gray-900 relative" style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+      {/* Subtle tech grid background */}
+      <div className="absolute inset-0 opacity-5" style={{
+        backgroundImage: 'linear-gradient(rgba(0, 119, 255, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 119, 255, 0.3) 1px, transparent 1px)',
+        backgroundSize: '32px 32px'
+      }}></div>
+      <div className="container mx-auto max-w-6xl relative">
+        <h2 className="text-3xl font-bold text-center mb-12 bg-gradient-to-r from-[#0077FF] via-[#00D9FF] to-[#00C9A7] bg-clip-text text-transparent dark:from-[#00D9FF] dark:via-[#7FD8FF] dark:to-[#00C9A7]">Available Modules</h2>
         <div className="grid md:grid-cols-1 gap-8">
           {modules.map((module, idx) => (
             <Card key={idx}>
@@ -191,7 +201,7 @@ function Features() {
   return (
     <section className="py-16 px-4">
       <div className="container mx-auto max-w-6xl">
-        <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">Why This Documentation?</h2>
+        <h2 className="text-3xl font-bold text-center mb-12 bg-gradient-to-r from-[#0077FF] via-[#00D9FF] to-[#00C9A7] bg-clip-text text-transparent dark:from-[#00D9FF] dark:via-[#7FD8FF] dark:to-[#00C9A7]">Why This Documentation?</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, idx) => (
             <Card key={idx}>
@@ -214,17 +224,22 @@ function Features() {
 
 function CallToAction() {
   return (
-    <section className="relative py-16 px-4 bg-gradient-to-r from-[#ffcda8] via-[#d49bc9] to-[#9c5ffc] dark:from-[#7befff] dark:via-[#9c5ffc] dark:to-[#d49bc9] text-white overflow-hidden">
+    <section className="relative py-16 px-4 bg-gradient-to-r from-[#00C9A7] via-[#00D9FF] to-[#0077FF] dark:from-[#0077FF] dark:via-[#00D9FF] dark:to-[#00C9A7] text-white overflow-hidden">
       {/* Glassmorphism overlay */}
       <div className="absolute inset-0 backdrop-blur-sm bg-white/5"></div>
+      {/* Tech circuit pattern overlay */}
+      <div className="absolute inset-0 opacity-10" style={{
+        backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px)',
+        backgroundSize: '50px 50px'
+      }}></div>
       <div className="relative container mx-auto max-w-4xl text-center">
-        <h2 className="text-3xl font-bold mb-4 drop-shadow-lg">Ready to Build Intelligent Robots?</h2>
+        <h2 className="text-3xl font-bold mb-4 drop-shadow-lg" style={{textShadow: '0 0 25px rgba(0, 217, 255, 0.6)'}}>Ready to Build Intelligent Robots?</h2>
         <p className="text-xl mb-8 text-white/90 drop-shadow-md">
           Start with Module 1 and master the foundation of Physical AI. From ROS 2 basics to robot modeling,
           you'll gain the skills to create sophisticated robotic systems.
         </p>
         <Link to="/docs/intro">
-          <Button variant="default" size="lg" className="bg-white/20 backdrop-blur-md border-white/30 text-white hover:bg-white/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+          <Button variant="default" size="lg" className="bg-white/20 backdrop-blur-md border-[#00D9FF]/30 text-white hover:bg-white/30 shadow-[0_0_20px_rgba(0,217,255,0.4)] hover:shadow-[0_0_35px_rgba(0,217,255,0.6)] transition-all duration-300 hover:scale-105">
             Begin Your Journey →
           </Button>
         </Link>

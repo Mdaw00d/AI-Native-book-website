@@ -58,12 +58,12 @@ const GlassMorphismFooter = () => {
   ];
 
   return (
-    <footer className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-t border-white/30 dark:border-gray-700/50 py-12 mt-16">
+    <footer className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-t border-[#00D9FF]/20 dark:border-[#00D9FF]/30 py-12 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Project Info */}
           <div className="lg:col-span-2">
-            <h3 className="text-xl font-bold bg-gradient-to-r from-[#7befff] via-[#9c5ffc] to-[#d49bc9] bg-clip-text text-transparent dark:from-[#9c5ffc] dark:via-[#7befff] dark:to-[#ffcda8] mb-4">
+            <h3 className="text-xl font-bold bg-gradient-to-r from-[#0077FF] via-[#00D9FF] to-[#00C9A7] bg-clip-text text-transparent dark:from-[#00D9FF] dark:via-[#7FD8FF] dark:to-[#00C9A7] mb-4">
               Physical AI Documentation
             </h3>
             <p className="text-gray-700 dark:text-gray-300 mb-4">
@@ -74,7 +74,7 @@ const GlassMorphismFooter = () => {
                 href="https://github.com/maryumxx/Physical-AI-Humanoids-Robotic-Textbook"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-600 dark:text-gray-400 hover:text-[#7befff] dark:hover:text-[#7befff] transition-colors duration-300"
+                className="text-gray-600 dark:text-gray-400 hover:text-[#00D9FF] dark:hover:text-[#00D9FF] transition-colors duration-300"
                 aria-label="GitHub Repository"
               >
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -91,7 +91,7 @@ const GlassMorphismFooter = () => {
               <li>
                 <a
                   href="/docs/intro"
-                  className="text-gray-600 dark:text-gray-300 hover:text-[#7befff] dark:hover:text-[#7befff] transition-colors duration-300"
+                  className="text-gray-600 dark:text-gray-300 hover:text-[#00D9FF] dark:hover:text-[#00D9FF] transition-colors duration-300"
                 >
                   Introduction
                 </a>
@@ -99,7 +99,7 @@ const GlassMorphismFooter = () => {
               {documentationModules.map((module, index) => (
                 <li key={index} className="ml-4">
                   <details className="group">
-                    <summary className="cursor-pointer text-gray-600 dark:text-gray-300 hover:text-[#7befff] dark:hover:text-[#7befff] transition-colors duration-300 list-none">
+                    <summary className="cursor-pointer text-gray-600 dark:text-gray-300 hover:text-[#00D9FF] dark:hover:text-[#00D9FF] transition-colors duration-300 list-none">
                       <span className="inline-block">{module.title}</span>
                       <span className="ml-2 group-open:rotate-180 transition-transform duration-200">▼</span>
                     </summary>
@@ -108,7 +108,7 @@ const GlassMorphismFooter = () => {
                         <li key={itemIndex}>
                           <a
                             href={item.href}
-                            className="text-gray-500 dark:text-gray-400 hover:text-[#9c5ffc] dark:hover:text-[#9c5ffc] text-sm transition-colors duration-300 block"
+                            className="text-gray-500 dark:text-gray-400 hover:text-[#0077FF] dark:hover:text-[#0077FF] text-sm transition-colors duration-300 block"
                           >
                             {item.label}
                           </a>
@@ -130,7 +130,7 @@ const GlassMorphismFooter = () => {
                   <li key={index}>
                     <a
                       href={link.href}
-                      className="text-gray-600 dark:text-gray-300 hover:text-[#7befff] dark:hover:text-[#7befff] transition-colors duration-300"
+                      className="text-gray-600 dark:text-gray-300 hover:text-[#00D9FF] dark:hover:text-[#00D9FF] transition-colors duration-300"
                     >
                       {link.label}
                     </a>
@@ -146,7 +146,7 @@ const GlassMorphismFooter = () => {
                   <li key={index}>
                     <a
                       href={resource.href}
-                      className="text-gray-600 dark:text-gray-300 hover:text-[#7befff] dark:hover:text-[#7befff] transition-colors duration-300"
+                      className="text-gray-600 dark:text-gray-300 hover:text-[#00D9FF] dark:hover:text-[#00D9FF] transition-colors duration-300"
                     >
                       {resource.label}
                     </a>
@@ -158,7 +158,7 @@ const GlassMorphismFooter = () => {
         </div>
 
         {/* Footer Bottom */}
-        <div className="border-t border-white/30 dark:border-gray-700/50 mt-8 pt-8">
+        <div className="border-t border-[#00D9FF]/20 dark:border-[#00D9FF]/30 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-600 dark:text-gray-400 text-sm">
               © {new Date().getFullYear()} Physical AI Documentation Book. Built with Docusaurus.
@@ -166,19 +166,19 @@ const GlassMorphismFooter = () => {
             <div className="flex space-x-6 mt-4 md:mt-0">
               <a
                 href="/privacy"
-                className="text-gray-500 dark:text-gray-400 hover:text-[#7befff] dark:hover:text-[#7befff] text-sm transition-colors duration-300"
+                className="text-gray-500 dark:text-gray-400 hover:text-[#00D9FF] dark:hover:text-[#00D9FF] text-sm transition-colors duration-300"
               >
                 Privacy Policy
               </a>
               <a
                 href="/terms"
-                className="text-gray-500 dark:text-gray-400 hover:text-[#7befff] dark:hover:text-[#7befff] text-sm transition-colors duration-300"
+                className="text-gray-500 dark:text-gray-400 hover:text-[#00D9FF] dark:hover:text-[#00D9FF] text-sm transition-colors duration-300"
               >
                 Terms of Service
               </a>
               <a
                 href="/contact"
-                className="text-gray-500 dark:text-gray-400 hover:text-[#7befff] dark:hover:text-[#7befff] text-sm transition-colors duration-300"
+                className="text-gray-500 dark:text-gray-400 hover:text-[#00D9FF] dark:hover:text-[#00D9FF] text-sm transition-colors duration-300"
               >
                 Contact
               </a>

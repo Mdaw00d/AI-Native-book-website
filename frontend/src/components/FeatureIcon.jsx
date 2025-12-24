@@ -10,9 +10,9 @@ export default function FeatureIcon({ type, className = '' }) {
       <svg className={iconClasses} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#7befff', stopOpacity: 1 }} />
-            <stop offset="50%" style={{ stopColor: '#9c5ffc', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#d49bc9', stopOpacity: 1 }} />
+            <stop offset="0%" style={{ stopColor: '#0077FF', stopOpacity: 1 }} />
+            <stop offset="50%" style={{ stopColor: '#00D9FF', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#00C9A7', stopOpacity: 1 }} />
           </linearGradient>
         </defs>
         <path
@@ -28,9 +28,9 @@ export default function FeatureIcon({ type, className = '' }) {
       <svg className={iconClasses} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#9c5ffc', stopOpacity: 1 }} />
-            <stop offset="50%" style={{ stopColor: '#d49bc9', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#ffcda8', stopOpacity: 1 }} />
+            <stop offset="0%" style={{ stopColor: '#00D9FF', stopOpacity: 1 }} />
+            <stop offset="50%" style={{ stopColor: '#00C9A7', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#7FD8FF', stopOpacity: 1 }} />
           </linearGradient>
         </defs>
         <rect x="3" y="3" width="7" height="7" rx="1" stroke={`url(#${gradientId})`} strokeWidth="2" fill={`url(#${gradientId})`} fillOpacity="0.2" />
@@ -43,9 +43,9 @@ export default function FeatureIcon({ type, className = '' }) {
       <svg className={iconClasses} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#7befff', stopOpacity: 1 }} />
-            <stop offset="50%" style={{ stopColor: '#9c5ffc', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#ffcda8', stopOpacity: 1 }} />
+            <stop offset="0%" style={{ stopColor: '#0077FF', stopOpacity: 1 }} />
+            <stop offset="50%" style={{ stopColor: '#00D9FF', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#7FD8FF', stopOpacity: 1 }} />
           </linearGradient>
         </defs>
         <rect x="5" y="11" width="14" height="10" rx="2" stroke={`url(#${gradientId})`} strokeWidth="2" fill={`url(#${gradientId})`} fillOpacity="0.2" />
@@ -59,9 +59,9 @@ export default function FeatureIcon({ type, className = '' }) {
       <svg className={iconClasses} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#ffcda8', stopOpacity: 1 }} />
-            <stop offset="50%" style={{ stopColor: '#d49bc9', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#9c5ffc', stopOpacity: 1 }} />
+            <stop offset="0%" style={{ stopColor: '#7FD8FF', stopOpacity: 1 }} />
+            <stop offset="50%" style={{ stopColor: '#00C9A7', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#00D9FF', stopOpacity: 1 }} />
           </linearGradient>
         </defs>
         <path
@@ -88,9 +88,9 @@ export default function FeatureIcon({ type, className = '' }) {
       <svg className={iconClasses} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#9c5ffc', stopOpacity: 1 }} />
-            <stop offset="50%" style={{ stopColor: '#7befff', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#d49bc9', stopOpacity: 1 }} />
+            <stop offset="0%" style={{ stopColor: '#00D9FF', stopOpacity: 1 }} />
+            <stop offset="50%" style={{ stopColor: '#0077FF', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#00C9A7', stopOpacity: 1 }} />
           </linearGradient>
         </defs>
         <path
@@ -116,9 +116,9 @@ export default function FeatureIcon({ type, className = '' }) {
       <svg className={iconClasses} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#7befff', stopOpacity: 1 }} />
-            <stop offset="50%" style={{ stopColor: '#d49bc9', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#ffcda8', stopOpacity: 1 }} />
+            <stop offset="0%" style={{ stopColor: '#0077FF', stopOpacity: 1 }} />
+            <stop offset="50%" style={{ stopColor: '#00C9A7', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#7FD8FF', stopOpacity: 1 }} />
           </linearGradient>
         </defs>
         <path
@@ -148,9 +148,9 @@ export default function FeatureIcon({ type, className = '' }) {
       <svg className={iconClasses} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#7befff', stopOpacity: 1 }} />
-            <stop offset="50%" style={{ stopColor: '#9c5ffc', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#d49bc9', stopOpacity: 1 }} />
+            <stop offset="0%" style={{ stopColor: '#0077FF', stopOpacity: 1 }} />
+            <stop offset="50%" style={{ stopColor: '#00D9FF', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#00C9A7', stopOpacity: 1 }} />
           </linearGradient>
         </defs>
         <path
@@ -177,9 +177,9 @@ export default function FeatureIcon({ type, className = '' }) {
       <svg className={iconClasses} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#9c5ffc', stopOpacity: 1 }} />
-            <stop offset="50%" style={{ stopColor: '#d49bc9', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#ffcda8', stopOpacity: 1 }} />
+            <stop offset="0%" style={{ stopColor: '#00D9FF', stopOpacity: 1 }} />
+            <stop offset="50%" style={{ stopColor: '#00C9A7', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#7FD8FF', stopOpacity: 1 }} />
           </linearGradient>
         </defs>
         <path
@@ -198,9 +198,9 @@ export default function FeatureIcon({ type, className = '' }) {
       <svg className={iconClasses} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style={{ stopColor: '#7befff', stopOpacity: 1 }} />
-            <stop offset="50%" style={{ stopColor: '#9c5ffc', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#ffcda8', stopOpacity: 1 }} />
+            <stop offset="0%" style={{ stopColor: '#0077FF', stopOpacity: 1 }} />
+            <stop offset="50%" style={{ stopColor: '#00D9FF', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#7FD8FF', stopOpacity: 1 }} />
           </linearGradient>
         </defs>
         <circle cx="12" cy="12" r="3" stroke={`url(#${gradientId})`} strokeWidth="2" fill={`url(#${gradientId})`} fillOpacity="0.3" />
@@ -216,8 +216,8 @@ export default function FeatureIcon({ type, className = '' }) {
 
   return (
     <div className="relative inline-block">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#7befff]/20 via-[#9c5ffc]/20 to-[#d49bc9]/20 rounded-xl blur-lg"></div>
-      <div className="relative bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm p-3 rounded-xl border border-white/30 shadow-lg">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0077FF]/20 via-[#00D9FF]/20 to-[#00C9A7]/20 rounded-xl blur-lg"></div>
+      <div className="relative bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm p-3 rounded-xl border border-[#00D9FF]/30 shadow-lg shadow-[0_0_15px_rgba(0,217,255,0.2)]">
         {icons[type] || icons.sparkle}
       </div>
     </div>
