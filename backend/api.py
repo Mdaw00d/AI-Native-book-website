@@ -23,13 +23,13 @@ app.add_middleware(
 )
 
 # Clients
-openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai_embed_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # For embeddings (sync)
 qdrant = QdrantClient(url=os.getenv("QDRANT_URL"), api_key=os.getenv("QDRANT_API_KEY"))
 collection_name = os.getenv("QDRANT_COLLECTION", "padh_book")
 
 # Embedding function using OpenAI (1536 dimensions)
 def embed_query(text: str):
-    res = openai_client.embeddings.create(
+    res = openai_embed_client.embeddings.create(
         model="text-embedding-3-small",
         input=text,
         dimensions=1024  # Match Qdrant collection size
@@ -69,11 +69,12 @@ Be helpful, concise, and friendly.
 When relevant, cite the source URLs at the end.
 """
 
-openai_client = AsyncOpenAI()
+# Async OpenAI client for the agent (different from embedding client)
+openai_agent_client = AsyncOpenAI()
 
 model = OpenAIChatCompletionsModel(
     model="gpt-4o-mini",
-    openai_client=openai_client
+    openai_client=openai_agent_client
 )
 
 agent = Agent(
