@@ -94,7 +94,7 @@ export default function BookChatWidget() {
         }}
       >
         <img
-          src="/bot.jpg"
+          src="bot.png"
           alt="Chat Bot"
           style={{
             width: "100%",
