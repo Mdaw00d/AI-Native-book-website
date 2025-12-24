@@ -71,7 +71,7 @@ const GlassMorphismFooter = () => {
             </p>
             <div className="flex space-x-4">
               <a
-                href="https://github.com/maryumxx/Physical-AI-Humanoids-Robotic-Textbook"
+                href="https://github.com/Mdaw00d/AI-Native-book-website/tree/main"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-600 dark:text-gray-400 hover:text-[#00D9FF] dark:hover:text-[#00D9FF] transition-colors duration-300"

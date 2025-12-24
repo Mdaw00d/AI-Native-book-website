@@ -18,11 +18,7 @@ export default function BookChatWidget() {
     setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
     try {
-      // Use production URL by default, or localhost for local development
-      const API_URL = typeof process !== 'undefined' && process.env?.REACT_APP_API_URL
-        ? process.env.REACT_APP_API_URL
-        : "https://ai-native-book-website.onrender.com";
-      const response = await fetch(`${API_URL}/chat`, {
+      const response = await fetch("https://ai-native-book-website.onrender.com/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input }),
@@ -94,7 +90,7 @@ export default function BookChatWidget() {
         }}
       >
         <img
-          src="bot.png"
+          src="/bot.png"
           alt="Chat Bot"
           style={{
             width: "100%",
