@@ -54,7 +54,7 @@ def get_all_urls(sitemap_url):
         for u in urls: print(" -", u)
         return urls
     except Exception as e:
-        print("❌ Sitemap error:", e)
+        print("ERROR - Sitemap error:", e)
         return []
 
 
@@ -62,12 +62,12 @@ def extract_text_from_url(url):
     try:
         html = requests.get(url, timeout=15).text
     except Exception as e:
-        print(f"❌ Fetch failed {url}: {e}")
+        print(f"ERROR - Fetch failed {url}: {e}")
         return ""
 
     text = extract_clean_text(html)
     if len(text) > 50_000:
-        print(f"⚠️ Skipping huge page: {url}")
+        print(f"WARNING - Skipping huge page: {url}")
         return ""
     return text
 
@@ -128,7 +128,7 @@ def ingest_book():
         if not text:
             continue
 
-        print(f"   → {len(text)} chars")
+        print(f"   > {len(text)} chars")
         for chunk in chunk_text(text):
             try:
                 vector = embed(chunk)
@@ -141,12 +141,12 @@ def ingest_book():
                     )]
                 )
                 save_metadata_sync(url, len(chunk))
-                print(f"   → Saved chunk {chunk_id}")
+                print(f"   > Saved chunk {chunk_id}")
                 chunk_id += 1
             except Exception as e:
-                print(f"❌ Error on chunk {chunk_id}: {e}")
+                print(f"ERROR on chunk {chunk_id}: {e}")
 
-    print(f"\n✔️ Ingestion complete! {chunk_id - 1} chunks stored.")
+    print(f"\nOK - Ingestion complete! {chunk_id - 1} chunks stored.")
 
 
 if __name__ == "__main__":
