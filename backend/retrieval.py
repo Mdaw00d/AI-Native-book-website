@@ -1,15 +1,15 @@
-import cohere
+from openai import OpenAI
 from qdrant_client import QdrantClient
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Initialize Cohere client from environment
-cohere_api_key = os.getenv("COHERE_API_KEY", "").strip()
-if not cohere_api_key:
-    raise ValueError("COHERE_API_KEY not found in environment")
-cohere_client = cohere.Client(cohere_api_key)
+# Initialize OpenAI client from environment
+openai_api_key = os.getenv("OPENAI_API_KEY", "").strip()
+if not openai_api_key:
+    raise ValueError("OPENAI_API_KEY not found in environment")
+openai_client = OpenAI(api_key=openai_api_key)
 
 # Connect to Qdrant from environment
 qdrant = QdrantClient(
@@ -18,13 +18,13 @@ qdrant = QdrantClient(
 )
 
 def get_embedding(text):
-    """Get embedding vector from Cohere Embed v3"""
-    response = cohere_client.embed(
-        model="embed-english-v3.0",
-        input_type="search_query",  # Use search_query for queries
-        texts=[text],
+    """Get embedding vector from OpenAI"""
+    response = openai_client.embeddings.create(
+        model="text-embedding-3-small",
+        input=text,
+        dimensions=1024  # Match Qdrant collection size
     )
-    return response.embeddings[0]  # Return the first embedding
+    return response.data[0].embedding
 
 def retrieve(query):
     embedding = get_embedding(query)

@@ -6,9 +6,8 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from agents import Agent, Runner, OpenAIChatCompletionsModel
 from qdrant_client import QdrantClient
-import cohere
 from dotenv import load_dotenv
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, OpenAI
 
 load_dotenv()
 
@@ -24,21 +23,18 @@ app.add_middleware(
 )
 
 # Clients
-cohere_api_key = os.getenv("COHERE_API_KEY", "").strip()
-if not cohere_api_key:
-    raise ValueError("COHERE_API_KEY not found in environment")
-cohere_client = cohere.Client(cohere_api_key)
+openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 qdrant = QdrantClient(url=os.getenv("QDRANT_URL"), api_key=os.getenv("QDRANT_API_KEY"))
 collection_name = os.getenv("QDRANT_COLLECTION", "padh_book")
 
-# Embedding function
+# Embedding function using OpenAI (1536 dimensions)
 def embed_query(text: str):
-    res = cohere_client.embed(
-        model="embed-english-v3.0",
-        input_type="search_query",
-        texts=[text]
+    res = openai_client.embeddings.create(
+        model="text-embedding-3-small",
+        input=text,
+        dimensions=1024  # Match Qdrant collection size
     )
-    return res.embeddings[0]
+    return res.data[0].embedding
 
 # Retrieval function
 def retrieve_context(query: str, top_k: int = 5):

@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from agents import Agent, Runner, OpenAIChatCompletionsModel, AsyncOpenAI
 from agents import set_tracing_disabled, function_tool
 
-import cohere
+from openai import OpenAI
 from qdrant_client import QdrantClient
 
 load_dotenv()
@@ -16,10 +16,10 @@ load_dotenv()
 # -------------------------------------
 COLLECTION_NAME = os.getenv("QDRANT_COLLECTION", "padh_book")
 
-COHERE_API_KEY = os.getenv("COHERE_API_KEY", "").strip()
-if not COHERE_API_KEY:
-    raise ValueError("COHERE_API_KEY missing")
-cohere_client = cohere.Client(COHERE_API_KEY)
+OPENAI_EMBED_KEY = os.getenv("OPENAI_API_KEY", "").strip()
+if not OPENAI_EMBED_KEY:
+    raise ValueError("OPENAI_API_KEY missing for embeddings")
+openai_embed_client = OpenAI(api_key=OPENAI_EMBED_KEY)
 
 QDRANT_URL = os.getenv("QDRANT_URL")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
@@ -36,12 +36,12 @@ if not OPENAI_API_KEY:
 # Embedding & Retrieval
 # -------------------------------------
 def get_embedding(text):
-    res = cohere_client.embed(
-        model="embed-english-v3.0",
-        input_type="search_query",
-        texts=[text]
+    res = openai_embed_client.embeddings.create(
+        model="text-embedding-3-small",
+        input=text,
+        dimensions=1024  # Match Qdrant collection size
     )
-    vector = res.embeddings[0]
+    vector = res.data[0].embedding
 
     # Check vector dimensions before sending to Qdrant
     if len(vector) != 1024:

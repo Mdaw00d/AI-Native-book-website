@@ -6,8 +6,8 @@ import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup
 from qdrant_client import QdrantClient
 from qdrant_client.models import VectorParams, Distance, PointStruct
-import cohere
 from dotenv import load_dotenv
+from openai import OpenAI
 
 from db import save_metadata_sync  # Your Neon DB metadata saver
 
@@ -19,12 +19,12 @@ load_dotenv()
 SITEMAP_URL = os.getenv("SITEMAP_URL", "https://ai-native-book-website.vercel.app/sitemap.xml")
 COLLECTION_NAME = os.getenv("QDRANT_COLLECTION", "padh_book")
 
-COHERE_API_KEY = os.getenv("COHERE_API_KEY", "").strip()
-if not COHERE_API_KEY:
-    raise ValueError("COHERE_API_KEY missing")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
+if not OPENAI_API_KEY:
+    raise ValueError("OPENAI_API_KEY missing")
 
-cohere_client = cohere.Client(COHERE_API_KEY)
-EMBED_MODEL = "embed-english-v3.0"
+openai_client = OpenAI(api_key=OPENAI_API_KEY)
+EMBED_MODEL = "text-embedding-3-small"
 
 QDRANT_URL = os.getenv("QDRANT_URL")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
@@ -87,8 +87,12 @@ def chunk_text(text, max_chars=1200):
 
 
 def embed(text):
-    res = cohere_client.embed(model=EMBED_MODEL, input_type="search_document", texts=[text])
-    vector = res.embeddings[0]
+    res = openai_client.embeddings.create(
+        model=EMBED_MODEL,
+        input=text,
+        dimensions=1024  # Match Qdrant collection size
+    )
+    vector = res.data[0].embedding
 
     # Check vector dimensions before storing to Qdrant
     if len(vector) != 1024:
