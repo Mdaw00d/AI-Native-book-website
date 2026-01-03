@@ -90,7 +90,7 @@ export default function BookChatWidget() {
         }}
       >
         <img
-          src="/bot.png"
+          src="/img/bot.png"
           alt="Chat Bot"
           style={{
             width: "100%",
@@ -220,6 +220,7 @@ export default function BookChatWidget() {
                 borderRadius: "20px",
                 border: "1px solid #d4d4d4",
                 fontSize: "14px",
+                color: "#000000",
                 outline: "none",
                 transition: "border-color 0.2s",
               }}

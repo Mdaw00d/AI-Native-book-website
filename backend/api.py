@@ -36,8 +36,8 @@ def embed_query(text: str):
     )
     return res.data[0].embedding
 
-# Retrieval function
-def retrieve_context(query: str, top_k: int = 5):
+# Retrieval function (optimized with reduced top_k)
+def retrieve_context(query: str, top_k: int = 3):
     vector = embed_query(query)
 
     # Check vector dimensions before sending to Qdrant
@@ -115,7 +115,7 @@ Question: {user_message}
         try:
             # 1. Run the agent (await because it's async)
             result = await Runner.run(agent, full_prompt)
-            
+
             # 2. Extract the clean answer
             # We explicitly check 'final_output' first because that's where the answer is hiding.
             if hasattr(result, 'final_output'):
@@ -127,9 +127,14 @@ Question: {user_message}
             else:
                 answer = str(result) # Only fallback to string dump if everything fails
 
-            # 3. Stream the answer nicely (character by character effect)
-            for char in answer:
-                yield char
+            # 3. Stream the answer in chunks (optimized for speed)
+            # Stream word-by-word instead of character-by-character
+            words = answer.split(' ')
+            for i, word in enumerate(words):
+                if i < len(words) - 1:
+                    yield word + ' '
+                else:
+                    yield word
 
             # 4. Add sources at the end
             if sources:
